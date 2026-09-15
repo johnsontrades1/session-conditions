@@ -146,5 +146,6 @@
     "EVENT": 419,
     "BIG_GAP": 271
   },
-  "data_source": "QQQ, RTH 9:30 ET opens (yfinance)"
+  "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
+  "stats_note": null
 }

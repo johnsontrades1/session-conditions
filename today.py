@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from features import build, load_prices, load_vix, resolve_price_source
 from regime import label, base_rates, OUTCOMES
-from events import build_calendar
+from events import build_calendar, FULL_COVERAGE_START
 
 SITE = Path(__file__).parent / "docs"
 SITE.mkdir(exist_ok=True)
@@ -24,7 +24,7 @@ DESCR = {
     "COILED":   "Recent ranges are compressed vs. the 20-day norm. Historically compression PERSISTS — small-range days are more likely, not less. The spring stays coiled longer than folklore says.",
     "EXPANDED": "Ranges have already expanded well above the 20-day norm. Historically expansion persists — big-range days stay elevated. Don't fade range size early.",
     "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common — size accordingly.",
-    "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Pre-event drift and post-release reversal patterns dominate.",
+    "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Calendar coverage is complete only since 2022, so stats below use 2022+ — suggestive (wider ranges), but UNPROVEN over longer history.",
     "BIG_GAP":  "Opening gap is large in ATR terms. Historically these gaps DON'T fill same-day (~25% vs ~67% baseline on QQQ RTH) and ranges run wider.",
     "NEUTRAL":  "Nothing in the pre-open data stands out. Treat base rates as unconditional.",
 }
@@ -48,9 +48,21 @@ def main(prices_file: str):
     _, data_source = resolve_price_source(prices_file)
     df = build(load_prices(prices_file), load_vix())
     labs = label(df)
-    br = base_rates(df, labs)
     today = df.index[-1]
     row, lab = df.iloc[-1], labs.iloc[-1]
+
+    # EVENT stats are only valid where the event calendar is complete — before
+    # 2022 the label meant something thinner (no CPI; nothing at all pre-2010),
+    # so full-sample EVENT base rates compare apples to oranges.
+    stats_note = None
+    if lab == "EVENT":
+        cut = df.index >= FULL_COVERAGE_START
+        df_stats, labs_stats = df[cut], labs[cut]
+        stats_note = (f"EVENT stats restricted to {FULL_COVERAGE_START[:4]}+ — the only span with "
+                      f"complete FOMC/CPI/NFP coverage. Small sample, one macro regime: UNPROVEN over longer history.")
+    else:
+        df_stats, labs_stats = df, labs
+    br = base_rates(df_stats, labs_stats)
 
     feats = []
     for k, name in FEATS.items():
@@ -71,9 +83,10 @@ def main(prices_file: str):
     payload = {
         "as_of": str(today.date()), "label": lab, "description": DESCR[lab],
         "n_days_like_this": int(br.loc[lab, "n"]), "n_all": int(br.loc["ALL", "n"]),
-        "sample_start": str(df.index[0].date()), "features": feats, "base_rates": rates, "events": events,
+        "sample_start": str(df_stats.index[0].date()), "features": feats, "base_rates": rates, "events": events,
         "label_counts": labs.value_counts().to_dict(),
         "data_source": data_source,
+        "stats_note": stats_note,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
@@ -107,7 +120,8 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 </style></head><body>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts. Data: {p["data_source"]}</div>
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
-<div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div></div>
+<div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
+{f'<div class="muted" style="margin-top:6px;font-size:12px">⚠ {p["stats_note"]}</div>' if p.get("stats_note") else ""}</div>
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 {"".join(fmt(r) for r in p["base_rates"])}</table>
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>

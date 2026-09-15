@@ -51,6 +51,17 @@ def main():
     pd.set_option("display.width", 250)
     report(df, lab)
 
+    # EVENT is definition-drifted across the sample (no events pre-2010, NFP-only
+    # 2010-2014, +FOMC 2015, +CPI 2022). Full-sample EVENT rows above are invalid;
+    # this is the only span where the label means what it means today.
+    from events import FULL_COVERAGE_START
+    cut = df.index >= FULL_COVERAGE_START
+    print(f"\n=== EVENT re-score, {FULL_COVERAGE_START[:4]}+ only (full calendar coverage) ===")
+    br22 = base_rates(df[cut], label(df[cut]))
+    cols = [c for c in br22.columns if not c.endswith(("_lo", "_hi"))]
+    print(br22.loc[["ALL", "EVENT"], cols].round(3).to_string())
+    print("EVENT verdict: UNPROVEN — direction suggestive but one macro regime, small n.")
+
     if args.sweep:
         grids = {
             "compress": [0.68, 0.77, 0.85, 0.94, 1.02],

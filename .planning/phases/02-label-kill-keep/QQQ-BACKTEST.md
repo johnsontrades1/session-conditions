@@ -17,7 +17,7 @@ The day-1 suspicion was right — Globex "gaps" are overnight drift, not gaps.
 | EXPANDED | **KEEP (upgraded)** | Strongest range effect (+0.172/+0.157 both halves, most stable label). Now sig on eff + trend_day too. Expansion persists — deviation grows monotonically with threshold (sweep 0.96→1.44: +0.051→+0.249). |
 | COILED | **KEEP** | Compression persists: small_range 48.1% vs 31.9% base, big_range 7.6% vs 15.2%, all sig. Stability -0.114/-0.172. Monotone in sweep (tighter compress → stronger effect). "Coiled spring" folklore dead on both datasets. |
 | BIG_GAP | **KEEP (new confidence)** | n 40→271. Real gaps DON'T fill: 25.1% vs 67.4% base, sig, stability -0.459/-0.385 — biggest effect in the whole study. Range 1.074 sig. Monotone in gap_big sweep (+0.092→+0.172). |
-| EVENT | **KEEP** | Weaker on QQQ than NQ but sig on range, small_range, gap_filled; stability +0.046/+0.081 consistent. NQ day-1 showed the same direction stronger. |
+| EVENT | **UNPROVEN (corrected 2026-09-14)** | Original KEEP was invalid: the event calendar is definition-drifted — no events at all pre-2010 (`build_calendar` starts 2010), NFP-only 2010-2014, +FOMC 2015, +CPI 2022. The full-sample stability check compared different label definitions and passed for the wrong reason. Re-scored on 2022+ only (complete calendar): n=169, range 1.019 vs 0.905 (sig), big_range 19.5% vs 12.9% (sig), small_range 21.9% vs 33.9% (sig), within-window stability +0.142/+0.079 same sign — direction suggestive but one macro regime, small n. Page now restricts EVENT stats to 2022+ and labels them UNPROVEN. Path to proven: backfill real FOMC (federalreserve.gov) and CPI (bls.gov) history, re-score. |
 | TREND | **RENAME → STRETCHED** | Inversion REPLICATES on clean data: range 0.903 (sig low), eff 0.454 (sig low), trend_day 0.323 (sig low), small_range 0.373 (sig high). Stability consistent (range -0.010/-0.046, eff -0.009/-0.026). ≥3 ATR 20d move + clean tape → next day QUIETER. Extension exhausts. Rule unchanged; name + page copy now match behavior. |
 | NEUTRAL | keep (bucket) | Tracks baseline as designed. |
 
@@ -56,6 +56,10 @@ Three DESCR strings contradicted the evidence and were rewritten:
   across both datasets and 27 years. NQ-specific re-validation optional via
   fetch_databento.py when user funds a pull (~$2-10 estimated, cost-guarded).
 - EVENT label strength differs NQ vs QQQ — futures react to macro harder. Keep watching.
+- Pre-2022 event-calendar gaps also mean some true event days sit inside OTHER labels'
+  historical samples (as false NEUTRAL/COILED/etc.). Events are ~5-14% of days, so the
+  dilution is small and every other label's verdict also replicated on the NQ sample,
+  but a full calendar backfill would clean this up too.
 
 ## Requirement mapping
 

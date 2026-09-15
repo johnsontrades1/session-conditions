@@ -10,6 +10,12 @@ from pathlib import Path
 
 DATA = Path(__file__).parent / "data"
 
+# First date with the COMPLETE event calendar (FOMC hardcoded from 2015, CPI
+# from 2022, NFP/opex generated from 2010). Before this, "EVENT" means a
+# different, thinner definition — EVENT-conditioned stats are only valid from
+# here. 1999-2009 has no events at all.
+FULL_COVERAGE_START = "2022-01-01"
+
 # FOMC decision days (second day of the meeting). Includes 2020 emergency cuts.
 FOMC = """
 2015-01-28 2015-03-18 2015-04-29 2015-06-17 2015-07-29 2015-09-17 2015-10-28 2015-12-16
