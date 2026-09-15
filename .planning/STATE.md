@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-14)
 
 **Core value:** Every number on the page is an honest, statistically defensible base rate.
-**Current focus:** Phase 1 — RTH Data Pipeline
+**Current focus:** Phase 2 — Label Kill/Keep on Clean Data
 
 ## Current Milestone
 
@@ -27,14 +27,13 @@ v1.0 — Honest RTH Pipeline
 
 ## Phase Progress
 
-- Phase 1 (RTH Data Pipeline): ⬜ Not started
+- Phase 1 (RTH Data Pipeline): 🟡 Code complete (d92a7f9) — live backfill awaits DATABENTO_API_KEY
 - Phase 2 (Label Kill/Keep on Clean Data): ⬜ Not started
 - Phase 3 (Automated Daily Deploy): ⬜ Not started
 
 ## Last Action
 
-2026-09-14 — Project initialized. Day-1 code imported, full pipeline ran on real
-yfinance data (6,541 days), GSD planning artifacts created.
+2026-09-14 — Phase 1 executed: Databento RTH pipeline built + tested (12/12), live backfill deferred pending API key.
 
 ## Key Context
 
@@ -46,4 +45,4 @@ yfinance data (6,541 days), GSD planning artifacts created.
 
 ## Blockers/Concerns
 
-- None yet. Databento signup/API key is a Phase 1 prerequisite (user action).
+- DATABENTO_API_KEY not yet provided — blocks Phase 1 live verification AND Phase 2 (labels need RTH data to re-score).

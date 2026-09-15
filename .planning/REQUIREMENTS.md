@@ -10,9 +10,9 @@ Requirements for v1.0 — Honest RTH Pipeline. Each maps to roadmap phases.
 ### Data (RTH via Databento)
 
 - [ ] **DATA-01**: One-time backfill of NQ RTH daily bars (true 9:30 ET opens) from Databento GLBX.MDP3, saved to `data/nq_rth_daily.csv`
-- [ ] **DATA-02**: `features.py` gap/open features computed from RTH open when RTH data present, with yfinance fallback preserved
-- [ ] **DATA-03**: Daily incremental Databento pull appends latest session without re-downloading history (credit-efficient)
-- [ ] **DATA-04**: VIX/VIX3M/VVIX daily refresh continues via yfinance alongside Databento equities data
+- [x] **DATA-02**: `features.py` gap/open features computed from RTH open when RTH data present, with yfinance fallback preserved
+- [x] **DATA-03**: Daily incremental Databento pull appends latest session without re-downloading history (credit-efficient)
+- [x] **DATA-04**: VIX/VIX3M/VVIX daily refresh continues via yfinance alongside Databento equities data
 
 ### Labels (kill/keep on clean data)
 
@@ -51,10 +51,10 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Blocked (needs API key) |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
 | LABEL-01 | Phase 2 | Pending |
 | LABEL-02 | Phase 2 | Pending |
 | LABEL-03 | Phase 2 | Pending |

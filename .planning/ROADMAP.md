@@ -20,7 +20,7 @@ killing the Globex-open contamination, with a credit-efficient daily incremental
 3. Running the daily fetch twice on the same day downloads only the missing session (no full re-pull)
 4. VIX complex still refreshes via yfinance in the same run
 
-**Status:** ⬜ Not started
+**Status:** 🟡 Code complete — live backfill awaits API key
 
 ### Phase 2 — Label Kill/Keep on Clean Data
 
