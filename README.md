@@ -43,3 +43,11 @@ each run prints which source is active. Tests: `python -m pytest tests/ -q`
   First-run spot-check: compare a few `nq_rth_daily.csv` opens vs known 9:30 ET prints.
 - CPI dates for 2025+ need checking against bls.gov/schedule.
 - Event Playbook tab (intraday move distributions around CPI/FOMC/NFP) needs multi-year 5-min data — Bloomberg (SCSU) or Databento's free credit.
+
+## Daily automation
+
+- LaunchAgent `com.johnsontrades.session-conditions` (copy in `deploy/`) runs
+  `run_daily.sh` weekdays 7:40 AM CT: fetch → render → commit+push `docs/`.
+- Page: https://johnsontrades1.github.io/session-conditions/ (Pages serves `main`/`docs`)
+- Log: `logs/daily.log`. Stale date on the page = failed run — check the log.
+- Manage: `launchctl unload/load ~/Library/LaunchAgents/com.johnsontrades.session-conditions.plist`
