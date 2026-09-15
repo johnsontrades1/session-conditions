@@ -8,12 +8,19 @@ No forecasts — only historical frequencies with confidence intervals.
 ## Run it
 
 ```bash
-pip install yfinance pandas numpy
+pip install -r requirements.txt
 python fetch_data.py        # pulls NQ, QQQ, VIX, VIX3M, VVIX, 60d of 5-min NQ  (needs internet)
+export DATABENTO_API_KEY=db-...   # databento.com signup, free $125 credit
+python fetch_databento.py   # NQ RTH daily bars (true 9:30 ET opens) — incremental, cost-guarded
 python regime.py            # backtest: which labels actually discriminate, and are they stable?
 python today.py             # writes site/index.html + site/today.json
 open site/index.html
 ```
+
+`features.py` automatically prefers `data/nq_rth_daily.csv` (RTH opens) when it
+exists and falls back to yfinance's `nq_daily.csv` (Globex opens) otherwise —
+each run prints which source is active. Tests: `python -m pytest tests/ -q`
+(no API key needed).
 
 ## Files
 
@@ -31,6 +38,8 @@ open site/index.html
 - Thresholds in `regime.P` are deliberately few. Sweep them, but if you need >2 knobs to make a label "work," it doesn't.
 
 ## Known gaps (day 2+)
-- yfinance's NQ daily `open` is the Globex open, not 9:30 RTH. Gap stats are cleaner on QQQ or on ProjectX/Databento RTH bars.
+- ~~yfinance's NQ daily `open` is the Globex open, not 9:30 RTH.~~ Resolved by
+  `fetch_databento.py` once the first live backfill runs (needs `DATABENTO_API_KEY`).
+  First-run spot-check: compare a few `nq_rth_daily.csv` opens vs known 9:30 ET prints.
 - CPI dates for 2025+ need checking against bls.gov/schedule.
 - Event Playbook tab (intraday move distributions around CPI/FOMC/NFP) needs multi-year 5-min data — Bloomberg (SCSU) or Databento's free credit.
