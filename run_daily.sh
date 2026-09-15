@@ -1,0 +1,50 @@
+#!/bin/bash
+# Daily pre-open pipeline: fetch → render → publish (GitHub Pages via docs/ on main).
+# Run by LaunchAgent com.johnsontrades.session-conditions weekdays 7:40 AM CT.
+# Log: logs/daily.log. A stale date on the published page means this failed — check the log.
+
+set -u
+DIR="$(cd "$(dirname "$0")" && pwd)"
+PY="$DIR/venv/bin/python"
+LOG="$DIR/logs/daily.log"
+mkdir -p "$DIR/logs"
+
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
+
+cd "$DIR" || exit 1
+log "=== run start ==="
+
+if ! "$PY" fetch_data.py >> "$LOG" 2>&1; then
+    log "FATAL: fetch_data.py failed — page not updated"
+    exit 1
+fi
+
+"$PY" fetch_databento.py >> "$LOG" 2>&1
+rc=$?
+if [ $rc -eq 1 ]; then
+    log "databento: no API key — fallback: yfinance opens"
+elif [ $rc -eq 2 ]; then
+    log "databento: COST GUARD ABORT — investigate before next pull; continuing on existing data"
+elif [ $rc -ne 0 ]; then
+    log "databento: exit $rc — continuing on existing data"
+fi
+
+if ! "$PY" today.py >> "$LOG" 2>&1; then
+    log "FATAL: today.py failed — page not updated"
+    exit 1
+fi
+
+if [ -n "$(git status --porcelain docs/)" ]; then
+    git add docs/ >> "$LOG" 2>&1
+    git commit -m "chore: daily page $(date +%F)" -- docs/ >> "$LOG" 2>&1
+    if git push origin main >> "$LOG" 2>&1; then
+        log "published docs/ for $(date +%F)"
+    else
+        log "FATAL: git push failed — page rendered locally but not published"
+        exit 1
+    fi
+else
+    log "docs/ unchanged — nothing to publish"
+fi
+
+log "=== run ok ==="

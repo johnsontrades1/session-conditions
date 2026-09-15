@@ -13,8 +13,8 @@ python fetch_data.py        # pulls NQ, QQQ, VIX, VIX3M, VVIX, 60d of 5-min NQ  
 export DATABENTO_API_KEY=db-...   # databento.com signup, free $125 credit
 python fetch_databento.py   # NQ RTH daily bars (true 9:30 ET opens) — incremental, cost-guarded
 python regime.py            # backtest: which labels actually discriminate, and are they stable?
-python today.py             # writes site/index.html + site/today.json
-open site/index.html
+python today.py             # writes docs/index.html + docs/today.json
+open docs/index.html
 ```
 
 `features.py` automatically prefers `data/nq_rth_daily.csv` (RTH opens) when it

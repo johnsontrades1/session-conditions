@@ -1,5 +1,5 @@
 """
-Produce today's Session Conditions readout: site/today.json + site/index.html.
+Produce today's Session Conditions readout: docs/today.json + docs/index.html.
 
     python today.py                # uses data/nq_daily.csv
     python today.py --prices synthetic_daily.csv
@@ -16,7 +16,7 @@ from features import build, load_prices, load_vix
 from regime import label, base_rates, OUTCOMES
 from events import build_calendar
 
-SITE = Path(__file__).parent / "site"
+SITE = Path(__file__).parent / "docs"
 SITE.mkdir(exist_ok=True)
 
 DESCR = {
