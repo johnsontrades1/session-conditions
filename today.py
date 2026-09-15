@@ -1,7 +1,7 @@
 """
 Produce today's Session Conditions readout: docs/today.json + docs/index.html.
 
-    python today.py                # uses data/nq_daily.csv
+    python today.py                # uses data/qqq_daily.csv (Phase 2 validated source)
     python today.py --prices synthetic_daily.csv
 
 The page shows: today's regime label, why (feature values with 1y percentile),
@@ -12,7 +12,7 @@ import argparse, json
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from features import build, load_prices, load_vix
+from features import build, load_prices, load_vix, resolve_price_source
 from regime import label, base_rates, OUTCOMES
 from events import build_calendar
 
@@ -45,6 +45,7 @@ def pct_rank(series: pd.Series, value: float, window=252) -> float:
 
 
 def main(prices_file: str):
+    _, data_source = resolve_price_source(prices_file)
     df = build(load_prices(prices_file), load_vix())
     labs = label(df)
     br = base_rates(df, labs)
@@ -72,6 +73,7 @@ def main(prices_file: str):
         "n_days_like_this": int(br.loc[lab, "n"]), "n_all": int(br.loc["ALL", "n"]),
         "sample_start": str(df.index[0].date()), "features": feats, "base_rates": rates, "events": events,
         "label_counts": labs.value_counts().to_dict(),
+        "data_source": data_source,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
@@ -103,7 +105,7 @@ table{{width:100%;border-collapse:collapse}} td{{padding:7px 4px;border-top:1px 
 tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;font-size:12px;padding:0 4px 6px}}
 .foot{{color:var(--muted);font-size:12px;margin-top:24px}} ul{{margin:0;padding-left:18px}}
 </style></head><body>
-<h1>Session Conditions — NQ</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts.</div>
+<h1>Session Conditions</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts. Data: {p["data_source"]}</div>
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div></div>
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
@@ -111,10 +113,10 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>
 <div class="card"><table><tr><th>Why</th><th class="num">Value</th><th class="num">1y percentile</th></tr>{feat_rows}</table></div>
 <div class="card"><b>Scheduled events, next 10 days</b><ul style="margin-top:8px">{ev_rows}</ul></div>
-<div class="foot">Every number is a historical frequency conditioned on information available before the open. Nothing here predicts direction. Not financial advice.</div>
+<div class="foot">Every number is a historical frequency conditioned on information available before the open, computed from: {p["data_source"]}. Nothing here predicts direction. Not financial advice.</div>
 </body></html>"""
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--prices", default="nq_daily.csv")
+    ap = argparse.ArgumentParser(); ap.add_argument("--prices", default="qqq_daily.csv")
     main(ap.parse_args().prices)

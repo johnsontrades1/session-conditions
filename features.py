@@ -12,14 +12,26 @@ from events import event_flags
 DATA = Path(__file__).parent / "data"
 
 
-def load_prices(name="nq_daily.csv") -> pd.DataFrame:
-    # Prefer true RTH bars (9:30 ET opens, fetch_databento.py) over yfinance's
-    # Globex-open daily bars, but only when the caller asked for the default file.
+def resolve_price_source(name="nq_daily.csv") -> tuple[str, str]:
+    """Return (actual filename, human-readable open-source description).
+
+    NQ default upgrades to true RTH bars when fetch_databento.py has produced
+    them; explicit filenames are never overridden. The description string goes
+    on the published page so the data source and the page copy can't silently
+    desync (that already happened once — NQ Globex numbers under QQQ copy).
+    """
     if name == "nq_daily.csv" and (DATA / "nq_rth_daily.csv").exists():
-        name = "nq_rth_daily.csv"
-        print("open source: RTH (databento)")
-    elif name == "nq_daily.csv":
-        print("open source: Globex (yfinance)")
+        return "nq_rth_daily.csv", "NQ futures, RTH 9:30 ET opens (Databento)"
+    if name == "nq_daily.csv":
+        return "nq_daily.csv", "NQ futures, Globex opens (yfinance) — gap stats contaminated"
+    if name == "qqq_daily.csv":
+        return "qqq_daily.csv", "QQQ, RTH 9:30 ET opens (yfinance)"
+    return name, name
+
+
+def load_prices(name="nq_daily.csv") -> pd.DataFrame:
+    name, source = resolve_price_source(name)
+    print(f"open source: {source}")
     df = pd.read_csv(DATA / name, parse_dates=["date"], index_col="date").sort_index()
     df = df[["open", "high", "low", "close"]].astype(float).dropna()
     df = df[(df.high >= df.low) & (df.high > 0)]

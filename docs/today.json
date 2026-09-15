@@ -1,46 +1,46 @@
 {
   "as_of": "2026-09-14",
-  "label": "EVENT",
-  "description": "Scheduled macro event today (or FOMC tomorrow). Pre-event drift and post-release reversal patterns dominate.",
-  "n_days_like_this": 421,
-  "n_all": 6541,
-  "sample_start": "2000-10-16",
+  "label": "COILED",
+  "description": "Recent ranges are compressed vs. the 20-day norm. Historically compression PERSISTS \u2014 small-range days are more likely, not less. The spring stays coiled longer than folklore says.",
+  "n_days_like_this": 1065,
+  "n_all": 6901,
+  "sample_start": "1999-04-08",
   "features": [
     {
       "key": "gap_atr",
       "name": "Opening gap (ATR units)",
-      "value": 0.258,
-      "pct_1y": 0.87
+      "value": 1.468,
+      "pct_1y": 0.98
     },
     {
       "key": "range_5_20",
       "name": "5d/20d range ratio",
-      "value": 0.931,
-      "pct_1y": 0.4
+      "value": 0.838,
+      "pct_1y": 0.27
     },
     {
       "key": "prev_range_atr",
       "name": "Yesterday's range (ATR)",
-      "value": 1.166,
-      "pct_1y": 0.71
+      "value": 0.504,
+      "pct_1y": 0.13
     },
     {
       "key": "trend_20_atr",
       "name": "20-day move (ATR)",
-      "value": -2.041,
-      "pct_1y": 0.05
+      "value": -2.185,
+      "pct_1y": 0.06
     },
     {
       "key": "er_10",
       "name": "Efficiency ratio (10d)",
-      "value": 0.178,
-      "pct_1y": 0.37
+      "value": 0.149,
+      "pct_1y": 0.32
     },
     {
       "key": "pos_20d",
       "name": "Position in 20d range",
-      "value": 0.325,
-      "pct_1y": 0.15
+      "value": 0.382,
+      "pct_1y": 0.22
     },
     {
       "key": "vix",
@@ -63,63 +63,63 @@
     {
       "key": "rv5_rv20",
       "name": "Realized vol 5d/20d",
-      "value": 0.88,
-      "pct_1y": 0.46
+      "value": 0.882,
+      "pct_1y": 0.44
     }
   ],
   "base_rates": [
     {
       "key": "out_range_atr",
       "name": "Session range (\u00d7 ATR)",
-      "cond": 1.114,
-      "lo": 1.066,
-      "hi": 1.163,
-      "all": 1.007,
+      "cond": 0.787,
+      "lo": 0.767,
+      "hi": 0.808,
+      "all": 0.934,
       "sig": true
     },
     {
       "key": "out_eff",
       "name": "Directional efficiency",
-      "cond": 0.475,
-      "lo": 0.451,
-      "hi": 0.5,
-      "all": 0.459,
+      "cond": 0.478,
+      "lo": 0.462,
+      "hi": 0.493,
+      "all": 0.472,
       "sig": false
     },
     {
       "key": "out_trend_day",
       "name": "P(trend day)",
-      "cond": 0.371,
-      "lo": 0.325,
-      "hi": 0.418,
-      "all": 0.341,
+      "cond": 0.361,
+      "lo": 0.333,
+      "hi": 0.39,
+      "all": 0.356,
       "sig": false
     },
     {
       "key": "out_big_range",
       "name": "P(range \u2265 1.3 ATR)",
-      "cond": 0.252,
-      "lo": 0.211,
-      "hi": 0.292,
-      "all": 0.203,
+      "cond": 0.076,
+      "lo": 0.06,
+      "hi": 0.093,
+      "all": 0.152,
       "sig": true
     },
     {
       "key": "out_small_range",
       "name": "P(range \u2264 0.7 ATR)",
-      "cond": 0.181,
-      "lo": 0.145,
-      "hi": 0.221,
-      "all": 0.257,
+      "cond": 0.481,
+      "lo": 0.45,
+      "hi": 0.51,
+      "all": 0.319,
       "sig": true
     },
     {
       "key": "out_gap_filled",
       "name": "P(gap filled)",
-      "cond": 0.914,
-      "lo": 0.888,
-      "hi": 0.941,
-      "all": 0.911,
+      "cond": 0.654,
+      "lo": 0.625,
+      "hi": 0.681,
+      "all": 0.674,
       "sig": false
     }
   ],
@@ -138,12 +138,13 @@
     }
   ],
   "label_counts": {
-    "NEUTRAL": 2734,
-    "COILED": 979,
-    "HIGH_VOL": 976,
-    "STRETCHED": 819,
-    "EXPANDED": 572,
-    "EVENT": 421,
-    "BIG_GAP": 40
-  }
+    "NEUTRAL": 2536,
+    "COILED": 1065,
+    "HIGH_VOL": 1054,
+    "STRETCHED": 906,
+    "EXPANDED": 650,
+    "EVENT": 419,
+    "BIG_GAP": 271
+  },
+  "data_source": "QQQ, RTH 9:30 ET opens (yfinance)"
 }
