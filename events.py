@@ -81,13 +81,21 @@ def event_flags(index: pd.DatetimeIndex) -> pd.DataFrame:
     major = ["ev_fomc", "ev_cpi", "ev_nfp"]
     out["event_day"] = out[[c for c in major if c in out]].any(axis=1)
     fomc_dates = pd.DatetimeIndex(cal.loc[cal.event == "FOMC", "date"])
-    # trading day immediately before FOMC decision
-    prev = {d: i for i, d in enumerate(index)}
+    # Trading day immediately before an FOMC decision. Only flag index[pos-1]
+    # when it is genuinely the prior trading day: close enough (weekend/holiday
+    # allowance) AND no non-weekend day sits between it and the meeting — a
+    # weekday gap means the true prior trading day isn't in the data yet
+    # (e.g. data ends Monday, meeting Wednesday: Tuesday is the real pre-FOMC
+    # day). Without that check, every future meeting flags the dataset's last row.
     pre = set()
     for f in fomc_dates:
         pos = index.searchsorted(f)
-        if 0 < pos <= len(index) and pos - 1 >= 0 and (pos == len(index) or index[pos] == f):
-            pre.add(index[pos - 1])
+        if pos == 0:
+            continue
+        prev_day = index[pos - 1]
+        between = pd.date_range(prev_day, f, freq="D")[1:-1]
+        if (f - prev_day).days <= 4 and all(d.weekday() >= 5 for d in between):
+            pre.add(prev_day)
     out["pre_fomc"] = index.isin(list(pre))
     return out
 
