@@ -35,7 +35,7 @@ gets a verdict, all surviving labels honest (CI excludes baseline, stable, ≤2 
 3. BIG_GAP explicitly kept or killed with documented evidence
 4. No label carries more than 2 tuned thresholds in `regime.P`
 
-**Status:** ⬜ Not started
+**Status:** ✅ Complete (QQQ RTH)
 
 ### Phase 3 — Automated Daily Deploy
 

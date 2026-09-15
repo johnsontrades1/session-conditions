@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-14)
 
 **Core value:** Every number on the page is an honest, statistically defensible base rate.
-**Current focus:** Phase 2 — Label Kill/Keep on Clean Data
+**Current focus:** Milestone wrap — DATA-01 scope decision pending
 
 ## Current Milestone
 
@@ -28,12 +28,12 @@ v1.0 — Honest RTH Pipeline
 ## Phase Progress
 
 - Phase 1 (RTH Data Pipeline): 🟡 Code complete (d92a7f9) — live backfill awaits DATABENTO_API_KEY
-- Phase 2 (Label Kill/Keep on Clean Data): ⬜ Not started
+- Phase 2 (Label Kill/Keep on Clean Data): ✅ Complete (QQQ RTH; NQ re-validation optional)
 - Phase 3 (Automated Daily Deploy): 🟡 Done, awaiting first unattended fire (next weekday 7:40 CT)
 
 ## Last Action
 
-2026-09-14 — Phase 3 executed ahead of Phase 2: docs/ on Pages (live), run_daily.sh, LaunchAgent weekdays 7:40 CT. Phase 2 still key-blocked.
+2026-09-14 — Phase 2 complete on QQQ RTH pivot: TREND→STRETCHED, BIG_GAP validated (25% fill vs 67%), all sweeps clean. Only DATA-01 (NQ backfill) open.
 
 ## Key Context
 
@@ -45,4 +45,4 @@ v1.0 — Honest RTH Pipeline
 
 ## Blockers/Concerns
 
-- DATABENTO_API_KEY not yet provided — blocks Phase 1 live verification AND Phase 2 (labels need RTH data to re-score).
+- DATA-01 (NQ Databento backfill): credits exhausted, ~$2-10 out of pocket when wanted. Everything else done.

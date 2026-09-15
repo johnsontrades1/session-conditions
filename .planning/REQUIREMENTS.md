@@ -16,10 +16,10 @@ Requirements for v1.0 — Honest RTH Pipeline. Each maps to roadmap phases.
 
 ### Labels (kill/keep on clean data)
 
-- [ ] **LABEL-01**: Full regime backtest re-run on RTH data; every label re-scored with bootstrap CI + half-split stability
-- [ ] **LABEL-02**: TREND label inversion resolved — either re-specified as explicit fade label or rule fixed, backed by RTH backtest
-- [ ] **LABEL-03**: BIG_GAP verdict on RTH gaps — keep if CI excludes baseline and stable, kill otherwise
-- [ ] **LABEL-04**: Threshold sweeps documented, each label ≤2 tuned knobs (honesty rule enforced)
+- [x] **LABEL-01**: Full regime backtest re-run on RTH data; every label re-scored with bootstrap CI + half-split stability
+- [x] **LABEL-02**: TREND label inversion resolved — either re-specified as explicit fade label or rule fixed, backed by RTH backtest
+- [x] **LABEL-03**: BIG_GAP verdict on RTH gaps — keep if CI excludes baseline and stable, kill otherwise
+- [x] **LABEL-04**: Threshold sweeps documented, each label ≤2 tuned knobs (honesty rule enforced)
 
 ### Deploy (automated daily page)
 
@@ -55,10 +55,10 @@ Explicitly excluded. Documented to prevent scope creep.
 | DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Complete |
-| LABEL-01 | Phase 2 | Pending |
-| LABEL-02 | Phase 2 | Pending |
-| LABEL-03 | Phase 2 | Pending |
-| LABEL-04 | Phase 2 | Pending |
+| LABEL-01 | Phase 2 | Complete |
+| LABEL-02 | Phase 2 | Complete |
+| LABEL-03 | Phase 2 | Complete |
+| LABEL-04 | Phase 2 | Complete |
 | DEPLOY-01 | Phase 3 | Complete (unattended proof pending) |
 | DEPLOY-02 | Phase 3 | Complete |
 | DEPLOY-03 | Phase 3 | Complete |
