@@ -33,7 +33,10 @@ def label(f: pd.DataFrame, p: dict = P) -> pd.Series:
     big_gap = f.gap_atr >= p["gap_big"]
 
     lab[stress] = "HIGH_VOL"
-    lab[~stress & trending] = "TREND"
+    # STRETCHED (né TREND): ≥3 ATR of 20d movement on a clean tape. Both the NQ
+    # (Globex) and QQQ (RTH) backtests show these days run QUIETER — less range,
+    # lower efficiency, fewer trend days. Extension exhausts; it doesn't continue.
+    lab[~stress & trending] = "STRETCHED"
     lab[~stress & ~trending & coiled] = "COILED"
     lab[~stress & ~trending & expanded] = "EXPANDED"
     lab[f.event_day | f.pre_fomc] = "EVENT"      # overrides all

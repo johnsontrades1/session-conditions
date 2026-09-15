@@ -1,7 +1,7 @@
 # Session Conditions
 
 Pre-open "what kind of day is today?" read for NQ day traders. Outputs a regime
-label (TREND / COILED / EXPANDED / HIGH_VOL / EVENT / BIG_GAP / NEUTRAL) and the
+label (STRETCHED / COILED / EXPANDED / HIGH_VOL / EVENT / BIG_GAP / NEUTRAL) and the
 **backtested base rates** for days that looked like this before the open.
 No forecasts — only historical frequencies with confidence intervals.
 

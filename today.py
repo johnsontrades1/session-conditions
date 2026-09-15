@@ -20,12 +20,12 @@ SITE = Path(__file__).parent / "docs"
 SITE.mkdir(exist_ok=True)
 
 DESCR = {
-    "TREND":    "Tape has been directional and clean. Historically these sessions skew toward continuation-style days.",
-    "COILED":   "Recent ranges are compressed vs. the 20-day norm. Range expansion tends to follow, but timing is not a forecast.",
-    "EXPANDED": "Ranges have already expanded well above the 20-day norm. Mean reversion in range size is the base case.",
-    "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and gap fills less reliable — size accordingly.",
+    "STRETCHED": "20-day move is extended (≥3 ATR) on a clean tape. Historically these sessions run QUIETER — smaller ranges, fewer trend days. Extension exhausts more often than it continues.",
+    "COILED":   "Recent ranges are compressed vs. the 20-day norm. Historically compression PERSISTS — small-range days are more likely, not less. The spring stays coiled longer than folklore says.",
+    "EXPANDED": "Ranges have already expanded well above the 20-day norm. Historically expansion persists — big-range days stay elevated. Don't fade range size early.",
+    "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common — size accordingly.",
     "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Pre-event drift and post-release reversal patterns dominate.",
-    "BIG_GAP":  "Opening gap is large in ATR terms. Gap-fill odds and first-hour behavior are the key stats to check below.",
+    "BIG_GAP":  "Opening gap is large in ATR terms. Historically these gaps DON'T fill same-day (~25% vs ~67% baseline on QQQ RTH) and ranges run wider.",
     "NEUTRAL":  "Nothing in the pre-open data stands out. Treat base rates as unconditional.",
 }
 FEATS = {
