@@ -29,11 +29,11 @@ v1.0 — Honest RTH Pipeline
 
 - Phase 1 (RTH Data Pipeline): 🟡 Code complete (d92a7f9) — live backfill awaits DATABENTO_API_KEY
 - Phase 2 (Label Kill/Keep on Clean Data): ⬜ Not started
-- Phase 3 (Automated Daily Deploy): ⬜ Not started
+- Phase 3 (Automated Daily Deploy): 🟡 Done, awaiting first unattended fire (next weekday 7:40 CT)
 
 ## Last Action
 
-2026-09-14 — Phase 1 executed: Databento RTH pipeline built + tested (12/12), live backfill deferred pending API key.
+2026-09-14 — Phase 3 executed ahead of Phase 2: docs/ on Pages (live), run_daily.sh, LaunchAgent weekdays 7:40 CT. Phase 2 still key-blocked.
 
 ## Key Context
 

@@ -49,7 +49,7 @@ zero manual steps, and failures are impossible to miss.
 2. GitHub Pages URL shows today's date after the run
 3. A failed run leaves an error in the log and the page's date visibly stale
 
-**Status:** ⬜ Not started
+**Status:** 🟡 Done — first unattended fire pending
 
 ## Success Criteria (Milestone Complete When)
 

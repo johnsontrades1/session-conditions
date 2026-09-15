@@ -23,9 +23,9 @@ Requirements for v1.0 — Honest RTH Pipeline. Each maps to roadmap phases.
 
 ### Deploy (automated daily page)
 
-- [ ] **DEPLOY-01**: LaunchAgent runs fetch → regime → today pipeline on weekday pre-open schedule (done before 9:15 ET)
-- [ ] **DEPLOY-02**: `site/` published to GitHub Pages automatically after each successful run
-- [ ] **DEPLOY-03**: Failed or stale runs are visible — log file + date check on page (stale date = obvious)
+- [x] **DEPLOY-01**: LaunchAgent runs fetch → regime → today pipeline on weekday pre-open schedule (done before 9:15 ET)
+- [x] **DEPLOY-02**: `site/` published to GitHub Pages automatically after each successful run
+- [x] **DEPLOY-03**: Failed or stale runs are visible — log file + date check on page (stale date = obvious)
 
 ## v2 Requirements
 
@@ -59,9 +59,9 @@ Explicitly excluded. Documented to prevent scope creep.
 | LABEL-02 | Phase 2 | Pending |
 | LABEL-03 | Phase 2 | Pending |
 | LABEL-04 | Phase 2 | Pending |
-| DEPLOY-01 | Phase 3 | Pending |
-| DEPLOY-02 | Phase 3 | Pending |
-| DEPLOY-03 | Phase 3 | Pending |
+| DEPLOY-01 | Phase 3 | Complete (unattended proof pending) |
+| DEPLOY-02 | Phase 3 | Complete |
+| DEPLOY-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total
