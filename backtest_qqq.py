@@ -40,12 +40,40 @@ def sweep(df, knob, values):
     return pd.DataFrame(rows)
 
 
+def gap_bands(df, prices):
+    """Same-day gap-fill by gap-size band vs a mechanical distance null.
+
+    Null: P(fill) if the day's adverse excursion from the open were drawn from
+    the unconditional excursion distribution — i.e., how much of the fill-rate
+    decline is just 'bigger gap = longer way back'. Caveat: the null is not
+    vol-matched, so a positive diff on big-gap days is at least partly their
+    wider-than-average ranges, not behavior.
+    """
+    p = prices.loc[df.index]
+    prev_close = p.close.shift(1).loc[df.index]
+    up = p.open > prev_close
+    exc = np.where(up, (p.open - p.low), (p.high - p.open)) / df.atr20
+    exc_sorted = np.sort(exc[~np.isnan(exc)])
+    p_mech = lambda g: 1.0 - np.searchsorted(exc_sorted, g, side="left") / len(exc_sorted)
+    print(f"{'gap_atr band':>14} {'n':>6} {'actual fill':>12} {'mech null':>10} {'diff':>7}")
+    for lo, hi in [(0.0, 0.1), (0.1, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 1.0), (1.0, np.inf)]:
+        m = (df.gap_atr >= lo) & (df.gap_atr < hi) & ~np.isnan(exc)
+        if m.sum() < 20:
+            continue
+        act = df.out_gap_filled[m].mean()
+        mech = np.mean([p_mech(g) for g in df.gap_atr[m]])
+        hi_s = "inf" if hi == np.inf else f"{hi:.1f}"
+        print(f"[{lo:.1f},{hi_s}) {m.sum():>9} {act:>11.3f} {mech:>10.3f} {act - mech:>+7.3f}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sweep", action="store_true")
+    ap.add_argument("--gaps", action="store_true")
     args = ap.parse_args()
 
-    df = build(load_prices("qqq_daily.csv"), load_vix())
+    prices = load_prices("qqq_daily.csv")
+    df = build(prices, load_vix())
     print(f"QQQ RTH sample: {len(df)} days  {df.index.min().date()} → {df.index.max().date()}\n")
     lab = label(df)
     pd.set_option("display.width", 250)
@@ -61,6 +89,10 @@ def main():
     cols = [c for c in br22.columns if not c.endswith(("_lo", "_hi"))]
     print(br22.loc[["ALL", "EVENT"], cols].round(3).to_string())
     print("EVENT verdict: UNPROVEN — direction suggestive but one macro regime, small n.")
+
+    if args.gaps:
+        print("\n=== gap-fill by band vs mechanical distance null ===")
+        gap_bands(df, prices)
 
     if args.sweep:
         grids = {

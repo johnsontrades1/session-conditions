@@ -14,9 +14,9 @@ The day-1 suspicion was right — Globex "gaps" are overnight drift, not gaps.
 | Label | Verdict | Evidence |
 |-------|---------|----------|
 | HIGH_VOL | **KEEP** | Sig on range (1.026), eff, trend_day, big_range, small_range. Stability +0.041/+0.154 same sign. Effect strengthens monotonically as vix_hi rises (sweep). |
-| EXPANDED | **KEEP (upgraded)** | Strongest range effect (+0.172/+0.157 both halves, most stable label). Now sig on eff + trend_day too. Expansion persists — deviation grows monotonically with threshold (sweep 0.96→1.44: +0.051→+0.249). |
-| COILED | **KEEP** | Compression persists: small_range 48.1% vs 31.9% base, big_range 7.6% vs 15.2%, all sig. Stability -0.114/-0.172. Monotone in sweep (tighter compress → stronger effect). "Coiled spring" folklore dead on both datasets. |
-| BIG_GAP | **KEEP (new confidence)** | n 40→271. Real gaps DON'T fill: 25.1% vs 67.4% base, sig, stability -0.459/-0.385 — biggest effect in the whole study. Range 1.074 sig. Monotone in gap_big sweep (+0.092→+0.172). |
+| EXPANDED | **KEEP (upgraded)** | Strongest range effect (+0.172/+0.157 both halves, most stable label). Now sig on eff + trend_day too. This is volatility clustering — the most replicated effect in empirical finance — measured on this instrument, not a discovery. Deviation grows monotonically with threshold (sweep 0.96→1.44: +0.051→+0.249). |
+| COILED | **KEEP** | Volatility clustering, low-vol side: small_range 48.1% vs 31.9% base, big_range 7.6% vs 15.2%, all sig, stability -0.114/-0.172, monotone in sweep. Useful because it contradicts "coiled spring" folklore, but the effect itself is standard vol clustering. |
+| BIG_GAP | **KEEP (claim corrected 2026-09-14)** | n 40→271 label / 793 at ≥0.6 threshold. Fill rate IS low (27.4% vs 67.4% base, sig, stable) — but band decomposition shows the decline is mostly ARITHMETIC: actual fill ≈ mechanical distance null in every band ([0,0.1): 93.9% vs 93.0% … [0.6,1.0): 30.5% vs 21.5%, [1.0,∞): 15.9% vs 5.5%). Big-gap days fill slightly MORE than raw distance predicts (+9-10pp, plausibly just their wider ranges — null isn't vol-matched). No evidence gaps "refuse" to fill. Keep the label for its (partly mechanical) fill odds and wider ranges; copy rewritten to say so. |
 | EVENT | **UNPROVEN (corrected 2026-09-14)** | Original KEEP was invalid: the event calendar is definition-drifted — no events at all pre-2010 (`build_calendar` starts 2010), NFP-only 2010-2014, +FOMC 2015, +CPI 2022. The full-sample stability check compared different label definitions and passed for the wrong reason. Re-scored on 2022+ only (complete calendar): n=169, range 1.019 vs 0.905 (sig), big_range 19.5% vs 12.9% (sig), small_range 21.9% vs 33.9% (sig), within-window stability +0.142/+0.079 same sign — direction suggestive but one macro regime, small n. Page now restricts EVENT stats to 2022+ and labels them UNPROVEN. Path to proven: backfill real FOMC (federalreserve.gov) and CPI (bls.gov) history, re-score. |
 | TREND | **RENAME → STRETCHED** | Inversion REPLICATES on clean data: range 0.903 (sig low), eff 0.454 (sig low), trend_day 0.323 (sig low), small_range 0.373 (sig high). Stability consistent (range -0.010/-0.046, eff -0.009/-0.026). ≥3 ATR 20d move + clean tape → next day QUIETER. Extension exhausts. Rule unchanged; name + page copy now match behavior. |
 | NEUTRAL | keep (bucket) | Tracks baseline as designed. |
@@ -42,13 +42,34 @@ The day-1 suspicion was right — Globex "gaps" are overnight drift, not gaps.
 | BIG_GAP | gap_big | 1 ✓ |
 | EVENT | none (calendar) | 0 ✓ |
 
+## Gap-fill mechanical decomposition (added 2026-09-14)
+
+Same-day fill by gap-size band vs mechanical null — P(fill) if the day's adverse
+excursion from open were drawn from the unconditional excursion distribution
+(`backtest_qqq.py --gaps`):
+
+| gap_atr band | n | actual fill | mech null | diff |
+|---|---|---|---|---|
+| [0.0,0.1) | 1666 | 93.9% | 92.9% | +1.0pp |
+| [0.1,0.2) | 1453 | 81.5% | 79.8% | +1.6pp |
+| [0.2,0.4) | 2015 | 62.2% | 61.5% | +0.7pp |
+| [0.4,0.6) | 974 | 44.5% | 40.7% | +3.8pp |
+| [0.6,1.0) | 623 | 30.5% | 21.5% | +9.0pp |
+| [1.0,∞) | 170 | 15.9% | 5.5% | +10.4pp |
+
+Fill-rate decline with gap size is arithmetic before it is behavior. Positive diffs
+on big bands mean large gaps fill somewhat MORE than distance alone implies —
+plausibly just wider ranges on gap days (null not vol-matched), certainly not a
+"gaps don't fill" behavioral effect.
+
 ## Page copy corrections applied
 
-Three DESCR strings contradicted the evidence and were rewritten:
+DESCR strings that contradicted or overclaimed the evidence, rewritten (2 passes):
 - TREND→STRETCHED: "skew toward continuation" → runs quieter, extension exhausts
-- COILED: "range expansion tends to follow" → compression persists
-- EXPANDED: "mean reversion in range size is the base case" → expansion persists
-- BIG_GAP: neutral copy → gaps don't fill same-day (25% vs 67%)
+- COILED: "range expansion tends to follow" → vol clustering, compression persists
+- EXPANDED: "mean reversion in range size is the base case" → vol clustering, expansion persists
+- BIG_GAP: "gaps DON'T fill" → low fill odds are mostly fill-distance arithmetic
+- EVENT: unqualified event copy → 2022+-only stats, UNPROVEN over longer history
 
 ## Caveats
 
