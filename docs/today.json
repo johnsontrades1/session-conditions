@@ -81,8 +81,8 @@
       "key": "out_eff",
       "name": "Directional efficiency",
       "cond": 0.475,
-      "lo": 0.45,
-      "hi": 0.499,
+      "lo": 0.451,
+      "hi": 0.5,
       "all": 0.459,
       "sig": false
     },
