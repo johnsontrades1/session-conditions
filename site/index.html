@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Session Conditions</title>
+<style>
+:root{--bg:#0f1115;--card:#171a21;--fg:#e8eaf0;--muted:#8b93a7;--acc:#4fd1c5;--line:#262a35}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,Inter,system-ui,sans-serif;padding:24px 16px;max-width:860px;margin:auto}
+h1{font-size:20px;margin:0 0 4px} .sub{color:var(--muted);margin-bottom:24px}
+.label{display:inline-block;font-size:34px;font-weight:700;letter-spacing:.02em;color:var(--acc);margin:6px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}
+table{width:100%;border-collapse:collapse} td{padding:7px 4px;border-top:1px solid var(--line)} tr:first-child td{border-top:0}
+.num{text-align:right;font-variant-numeric:tabular-nums} .muted{color:var(--muted)} .ci{color:var(--muted);font-size:12px}
+tr.ns td{opacity:.55} th{text-align:left;color:var(--muted);font-weight:500;font-size:12px;padding:0 4px 6px}
+.foot{color:var(--muted);font-size:12px;margin-top:24px} ul{margin:0;padding-left:18px}
+</style></head><body>
+<h1>Session Conditions — NQ</h1><div class="sub">Pre-open read for 2026-09-14. Base rates, not forecasts.</div>
+<div class="card"><div class="label">EVENT</div><div>Scheduled macro event today (or FOMC tomorrow). Pre-event drift and post-release reversal patterns dominate.</div>
+<div class="muted" style="margin-top:8px">421 sessions like this out of 6541 since 2000-10-16</div></div>
+<div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
+<tr class="sig"><td>Session range (× ATR)</td><td class="num">1.11 <span class="ci">[1.07–1.16]</span></td><td class="num muted">1.01</td><td class="num">▲ </td></tr><tr class="ns"><td>Directional efficiency</td><td class="num">0.47 <span class="ci">[0.45–0.50]</span></td><td class="num muted">0.46</td><td class="num">▲ n.s.</td></tr><tr class="ns"><td>P(trend day)</td><td class="num">37% <span class="ci">[32%–42%]</span></td><td class="num muted">34%</td><td class="num">▲ n.s.</td></tr><tr class="sig"><td>P(range ≥ 1.3 ATR)</td><td class="num">25% <span class="ci">[21%–29%]</span></td><td class="num muted">20%</td><td class="num">▲ </td></tr><tr class="sig"><td>P(range ≤ 0.7 ATR)</td><td class="num">18% <span class="ci">[14%–22%]</span></td><td class="num muted">26%</td><td class="num">▼ </td></tr><tr class="ns"><td>P(gap filled)</td><td class="num">91% <span class="ci">[89%–94%]</span></td><td class="num muted">91%</td><td class="num">▲ n.s.</td></tr></table>
+<div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>
+<div class="card"><table><tr><th>Why</th><th class="num">Value</th><th class="num">1y percentile</th></tr><tr><td>Opening gap (ATR units)</td><td class="num">0.258</td><td class="num muted">87% pct</td></tr><tr><td>5d/20d range ratio</td><td class="num">0.931</td><td class="num muted">40% pct</td></tr><tr><td>Yesterday's range (ATR)</td><td class="num">1.166</td><td class="num muted">71% pct</td></tr><tr><td>20-day move (ATR)</td><td class="num">-2.041</td><td class="num muted">5% pct</td></tr><tr><td>Efficiency ratio (10d)</td><td class="num">0.178</td><td class="num muted">37% pct</td></tr><tr><td>Position in 20d range</td><td class="num">0.325</td><td class="num muted">15% pct</td></tr><tr><td>VIX (prior close)</td><td class="num">15.84</td><td class="num muted">22% pct</td></tr><tr><td>VIX / VIX3M</td><td class="num">0.771</td><td class="num muted">9% pct</td></tr><tr><td>VIX 1y percentile</td><td class="num">0.232</td><td class="num muted">20% pct</td></tr><tr><td>Realized vol 5d/20d</td><td class="num">0.88</td><td class="num muted">46% pct</td></tr></table></div>
+<div class="card"><b>Scheduled events, next 10 days</b><ul style="margin-top:8px"><li><b>2026-09-16</b> FOMC</li><li><b>2026-09-18</b> OPEX</li><li><b>2026-09-18</b> QUAD_WITCH</li></ul></div>
+<div class="foot">Every number is a historical frequency conditioned on information available before the open. Nothing here predicts direction. Not financial advice.</div>
+</body></html>

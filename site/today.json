@@ -1,0 +1,149 @@
+{
+  "as_of": "2026-09-14",
+  "label": "EVENT",
+  "description": "Scheduled macro event today (or FOMC tomorrow). Pre-event drift and post-release reversal patterns dominate.",
+  "n_days_like_this": 421,
+  "n_all": 6541,
+  "sample_start": "2000-10-16",
+  "features": [
+    {
+      "key": "gap_atr",
+      "name": "Opening gap (ATR units)",
+      "value": 0.258,
+      "pct_1y": 0.87
+    },
+    {
+      "key": "range_5_20",
+      "name": "5d/20d range ratio",
+      "value": 0.931,
+      "pct_1y": 0.4
+    },
+    {
+      "key": "prev_range_atr",
+      "name": "Yesterday's range (ATR)",
+      "value": 1.166,
+      "pct_1y": 0.71
+    },
+    {
+      "key": "trend_20_atr",
+      "name": "20-day move (ATR)",
+      "value": -2.041,
+      "pct_1y": 0.05
+    },
+    {
+      "key": "er_10",
+      "name": "Efficiency ratio (10d)",
+      "value": 0.178,
+      "pct_1y": 0.37
+    },
+    {
+      "key": "pos_20d",
+      "name": "Position in 20d range",
+      "value": 0.325,
+      "pct_1y": 0.15
+    },
+    {
+      "key": "vix",
+      "name": "VIX (prior close)",
+      "value": 15.84,
+      "pct_1y": 0.22
+    },
+    {
+      "key": "vix_term",
+      "name": "VIX / VIX3M",
+      "value": 0.771,
+      "pct_1y": 0.09
+    },
+    {
+      "key": "vix_rank_1y",
+      "name": "VIX 1y percentile",
+      "value": 0.232,
+      "pct_1y": 0.2
+    },
+    {
+      "key": "rv5_rv20",
+      "name": "Realized vol 5d/20d",
+      "value": 0.88,
+      "pct_1y": 0.46
+    }
+  ],
+  "base_rates": [
+    {
+      "key": "out_range_atr",
+      "name": "Session range (\u00d7 ATR)",
+      "cond": 1.114,
+      "lo": 1.066,
+      "hi": 1.163,
+      "all": 1.007,
+      "sig": true
+    },
+    {
+      "key": "out_eff",
+      "name": "Directional efficiency",
+      "cond": 0.475,
+      "lo": 0.45,
+      "hi": 0.499,
+      "all": 0.459,
+      "sig": false
+    },
+    {
+      "key": "out_trend_day",
+      "name": "P(trend day)",
+      "cond": 0.371,
+      "lo": 0.325,
+      "hi": 0.418,
+      "all": 0.341,
+      "sig": false
+    },
+    {
+      "key": "out_big_range",
+      "name": "P(range \u2265 1.3 ATR)",
+      "cond": 0.252,
+      "lo": 0.211,
+      "hi": 0.292,
+      "all": 0.203,
+      "sig": true
+    },
+    {
+      "key": "out_small_range",
+      "name": "P(range \u2264 0.7 ATR)",
+      "cond": 0.181,
+      "lo": 0.145,
+      "hi": 0.221,
+      "all": 0.257,
+      "sig": true
+    },
+    {
+      "key": "out_gap_filled",
+      "name": "P(gap filled)",
+      "cond": 0.914,
+      "lo": 0.888,
+      "hi": 0.941,
+      "all": 0.911,
+      "sig": false
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-09-16",
+      "event": "FOMC"
+    },
+    {
+      "date": "2026-09-18",
+      "event": "OPEX"
+    },
+    {
+      "date": "2026-09-18",
+      "event": "QUAD_WITCH"
+    }
+  ],
+  "label_counts": {
+    "NEUTRAL": 2734,
+    "COILED": 979,
+    "HIGH_VOL": 976,
+    "TREND": 819,
+    "EXPANDED": 572,
+    "EVENT": 421,
+    "BIG_GAP": 40
+  }
+}
