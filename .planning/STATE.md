@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Honest RTH Pipeline
-status: in_progress
+status: complete
 last_updated: "2026-09-14"
 progress:
   total_phases: 3
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-14)
 
 **Core value:** Every number on the page is an honest, statistically defensible base rate.
-**Current focus:** Milestone wrap — DATA-01 scope decision pending
+**Current focus:** v1.0 COMPLETE — next: v2 (Event Playbook, NQ pull optional)
 
 ## Current Milestone
 
@@ -27,13 +27,13 @@ v1.0 — Honest RTH Pipeline
 
 ## Phase Progress
 
-- Phase 1 (RTH Data Pipeline): 🟡 Code complete (d92a7f9) — live backfill awaits DATABENTO_API_KEY
+- Phase 1 (RTH Data Pipeline): ✅ Complete (DATA-01 descoped to v2; code ready, cost-guarded)
 - Phase 2 (Label Kill/Keep on Clean Data): ✅ Complete (QQQ RTH; NQ re-validation optional)
-- Phase 3 (Automated Daily Deploy): 🟡 Done, awaiting first unattended fire (next weekday 7:40 CT)
+- Phase 3 (Automated Daily Deploy): ✅ Complete (first unattended fire: next weekday 7:40 CT — glance check)
 
 ## Last Action
 
-2026-09-14 — Phase 2 complete on QQQ RTH pivot: TREND→STRETCHED, BIG_GAP validated (25% fill vs 67%), all sweeps clean. Only DATA-01 (NQ backfill) open.
+2026-09-14 — v1.0 MILESTONE COMPLETE. DATA-01 descoped to v2 (user decision). 10/10 requirements done.
 
 ## Key Context
 
@@ -45,4 +45,4 @@ v1.0 — Honest RTH Pipeline
 
 ## Blockers/Concerns
 
-- DATA-01 (NQ Databento backfill): credits exhausted, ~$2-10 out of pocket when wanted. Everything else done.
+- None. Watch: first unattended LaunchAgent fire next weekday 7:40 AM CT.

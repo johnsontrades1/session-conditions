@@ -9,7 +9,6 @@ Requirements for v1.0 — Honest RTH Pipeline. Each maps to roadmap phases.
 
 ### Data (RTH via Databento)
 
-- [ ] **DATA-01**: One-time backfill of NQ RTH daily bars (true 9:30 ET opens) from Databento GLBX.MDP3, saved to `data/nq_rth_daily.csv`
 - [x] **DATA-02**: `features.py` gap/open features computed from RTH open when RTH data present, with yfinance fallback preserved
 - [x] **DATA-03**: Daily incremental Databento pull appends latest session without re-downloading history (credit-efficient)
 - [x] **DATA-04**: VIX/VIX3M/VVIX daily refresh continues via yfinance alongside Databento equities data
@@ -31,6 +30,10 @@ Requirements for v1.0 — Honest RTH Pipeline. Each maps to roadmap phases.
 
 Deferred to future release. Tracked but not in current roadmap.
 
+### NQ Data (descoped from v1.0 — 2026-09-14)
+
+- **DATA-01**: NQ RTH backfill via fetch_databento.py — credits exhausted; QQQ RTH replicated all regime conclusions. ~$2-10 pull, script ready, cost-guarded.
+
 ### Event Playbook
 
 - **EVENT-01**: Intraday move distributions around CPI/FOMC/NFP from multi-year intraday data
@@ -51,7 +54,7 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Blocked (needs API key) |
+| DATA-01 | v2 | Descoped 2026-09-14 |
 | DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Complete |
@@ -64,9 +67,10 @@ Explicitly excluded. Documented to prevent scope creep.
 | DEPLOY-03 | Phase 3 | Complete |
 
 **Coverage:**
-- v1 requirements: 11 total
-- Mapped to phases: 11
+- v1 requirements: 10 total (DATA-01 descoped to v2 on 2026-09-14)
+- Mapped to phases: 10
 - Unmapped: 0 ✓
+- Complete: 10/10 ✓
 
 ---
 *Requirements defined: 2026-09-14*
