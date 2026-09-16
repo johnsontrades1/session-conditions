@@ -85,11 +85,17 @@ def main(prices_file: str):
 
     rates = []
     for oc in OUTCOMES:
-        rates.append({
+        r = {
             "key": oc, "name": OUT_NAMES[oc],
             "cond": round(float(br.loc[lab, oc]), 3), "lo": round(float(br.loc[lab, oc + "_lo"]), 3), "hi": round(float(br.loc[lab, oc + "_hi"]), 3),
             "all": round(float(br.loc["ALL", oc]), 3), "sig": bool(br.loc[lab, oc + "_sig"]),
-        })
+        }
+        # IQR only for continuous outcomes — the actual spread of days, which is
+        # what sizing cares about. Meaningless for the P(...) binary rows.
+        if not oc.startswith(("out_trend", "out_big", "out_small", "out_gap")):
+            r["p25"] = round(float(br.loc[lab, oc + "_p25"]), 3)
+            r["p75"] = round(float(br.loc[lab, oc + "_p75"]), 3)
+        rates.append(r)
 
     cal = build_calendar(str(today.date()), str((today + pd.Timedelta(days=10)).date()))
     events = [{"date": str(d.date()), "event": e} for d, e in zip(cal.date, cal.event)]
@@ -124,9 +130,16 @@ def render(p: dict) -> str:
         f = pct if prob else (lambda x: f"{x:.2f}")
         arrow = "▲" if r["cond"] > r["all"] else "▼"
         cls = "sig" if r["sig"] else "ns"
-        return (f'<tr class="{cls}"><td>{r["name"]}</td><td class="num">{f(r["cond"])} '
-                f'<span class="ci">[{f(r["lo"])}–{f(r["hi"])}]</span></td><td class="num muted">{f(r["all"])}</td>'
-                f'<td class="num">{arrow} {"" if r["sig"] else "n.s."}</td></tr>')
+        row = (f'<tr class="{cls}"><td>{r["name"]}</td><td class="num">{f(r["cond"])} '
+               f'<span class="ci">[{f(r["lo"])}–{f(r["hi"])}]</span></td><td class="num muted">{f(r["all"])}</td>'
+               f'<td class="num">{arrow} {"" if r["sig"] else "n.s."}</td></tr>')
+        # IQR line: the actual spread of days like this — visually primary over
+        # the CI, which only describes uncertainty about the average.
+        if "p25" in r:
+            unit = " × ATR" if r["key"] == "out_range_atr" else ""
+            row += (f'<tr class="{cls}"><td colspan="4" class="iqr">Middle 50% of days like this: '
+                    f'{r["p25"]:.2f} – {r["p75"]:.2f}{unit}</td></tr>')
+        return row
     feat_rows = "".join(f'<tr><td>{x["name"]}</td><td class="num">{x["value"]}</td><td class="num muted">{pct(x["pct_1y"])} pct</td></tr>' for x in p["features"])
     ev_rows = "".join(f'<li><b>{e["date"]}</b> {e["event"]}</li>' for e in p["events"]) or "<li>None in the next 10 days</li>"
     return f"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -141,6 +154,7 @@ table{{width:100%;border-collapse:collapse}} td{{padding:7px 4px;border-top:1px 
 .num{{text-align:right;font-variant-numeric:tabular-nums}} .muted{{color:var(--muted)}} .ci{{color:var(--muted);font-size:12px}}
 tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;font-size:12px;padding:0 4px 6px}}
 .foot{{color:var(--muted);font-size:12px;margin-top:24px}} ul{{margin:0;padding-left:18px}}
+.iqr{{color:var(--fg);font-size:13px;padding-top:0 !important;border-top:0 !important;padding-bottom:10px}}
 .mod{{border-left:3px solid var(--line);padding:8px 0 8px 12px;margin-top:14px}}
 .modname{{font-size:15px;font-weight:600;color:var(--fg)}}
 .modcopy{{font-size:13px;color:var(--muted);margin-top:2px}}

@@ -88,6 +88,12 @@ def base_rates(df: pd.DataFrame, labels: pd.Series, outcomes=OUTCOMES) -> pd.Dat
             m = np.nanmean(x)
             r[oc] = m
             r[oc + "_lo"], r[oc + "_hi"] = lo, hi
+            # IQR = actual spread of outcomes (what a trader sizes against);
+            # the bootstrap CI above is only uncertainty about the mean.
+            if len(x) >= 5:
+                r[oc + "_p25"], r[oc + "_p75"] = np.nanquantile(x, [0.25, 0.75])
+            else:
+                r[oc + "_p25"] = r[oc + "_p75"] = np.nan
             r[oc + "_sig"] = bool(lab != "ALL" and (hi < base[oc] or lo > base[oc]))
         rows.append(r)
     return pd.DataFrame(rows).set_index("label")
@@ -124,7 +130,7 @@ if __name__ == "__main__":
     pd.set_option("display.width", 200)
     print(lab.value_counts())
     br = base_rates(df, lab)
-    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi"))]
+    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi", "_p25", "_p75"))]
     print(br[cols].round(3).to_string())
     print("\nStability (deviation from baseline, out_range_atr):")
     print(stability(df, lab, "out_range_atr").round(3))
