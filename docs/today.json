@@ -77,7 +77,13 @@
       "all": 0.934,
       "sig": true,
       "p25": 0.555,
-      "p75": 0.952
+      "p75": 0.952,
+      "pts": 252,
+      "pts_all": 297,
+      "pts_p25": 177,
+      "pts_p75": 303,
+      "usd_p25": 354,
+      "usd_p75": 606
     },
     {
       "key": "out_eff",
@@ -161,5 +167,9 @@
   ],
   "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
   "age_bdays_at_render": 1,
-  "stale_at_render": false
+  "stale_at_render": false,
+  "instrument": "MNQ",
+  "dollars_per_point": 2.0,
+  "ndx_level": 28937.8,
+  "atr_points": 318.5
 }

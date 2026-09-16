@@ -18,6 +18,15 @@ from events import build_calendar, FULL_COVERAGE_START
 
 SITE = Path(__file__).parent / "docs"
 SITE.mkdir(exist_ok=True)
+DATA = Path(__file__).parent / "data"
+
+# Instrument settings for the point/dollar display translation. Internal stats
+# stay percent-normalized (atr_pct × index level → points); only rendering uses this.
+INSTRUMENT = dict(
+    name="MNQ",
+    dollars_per_point=2.0,          # MNQ multiplier
+    index_file="ndx_daily.csv",     # ^NDX close = the level points are quoted on
+)
 
 DESCR = {  # primary regimes (mutually exclusive)
     "STRETCHED": "20-day move is extended (≥3 ATR) on a clean tape. Historically these sessions run QUIETER — smaller ranges, fewer trend days. Extension exhausts more often than it continues.",
@@ -83,6 +92,16 @@ def main(prices_file: str):
         if k in df and not pd.isna(row[k]):
             feats.append({"key": k, "name": name, "value": round(float(row[k]), 3), "pct_1y": round(pct_rank(df[k], row[k]), 2)})
 
+    # Point/dollar translation at today's index level — display only; the
+    # historical finding is the ATR multiple.
+    atr_points = ndx_level = None
+    ndx_file = DATA / INSTRUMENT["index_file"]
+    if ndx_file.exists() and "atr_pct" in row and not pd.isna(row["atr_pct"]):
+        ndx = pd.read_csv(ndx_file, parse_dates=["date"], index_col="date")["close"].dropna()
+        if len(ndx):
+            ndx_level = float(ndx.iloc[-1])
+            atr_points = float(row["atr_pct"]) * ndx_level
+
     rates = []
     for oc in OUTCOMES:
         r = {
@@ -95,6 +114,12 @@ def main(prices_file: str):
         if not oc.startswith(("out_trend", "out_big", "out_small", "out_gap")):
             r["p25"] = round(float(br.loc[lab, oc + "_p25"]), 3)
             r["p75"] = round(float(br.loc[lab, oc + "_p75"]), 3)
+        if oc == "out_range_atr" and atr_points:  # only ATR-multiple rows convert to points
+            dpp = INSTRUMENT["dollars_per_point"]
+            r["pts"] = round(r["cond"] * atr_points)
+            r["pts_all"] = round(r["all"] * atr_points)
+            r["pts_p25"], r["pts_p75"] = round(r["p25"] * atr_points), round(r["p75"] * atr_points)
+            r["usd_p25"], r["usd_p75"] = round(r["pts_p25"] * dpp), round(r["pts_p75"] * dpp)
         rates.append(r)
 
     cal = build_calendar(str(today.date()), str((today + pd.Timedelta(days=10)).date()))
@@ -117,6 +142,9 @@ def main(prices_file: str):
         "modifiers": active_mods,
         "data_source": data_source,
         "age_bdays_at_render": int(age_bdays), "stale_at_render": bool(stale),
+        "instrument": INSTRUMENT["name"], "dollars_per_point": INSTRUMENT["dollars_per_point"],
+        "ndx_level": round(ndx_level, 1) if ndx_level else None,
+        "atr_points": round(atr_points, 1) if atr_points else None,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
@@ -128,17 +156,28 @@ def render(p: dict) -> str:
     def fmt(r):
         prob = r["key"].startswith(("out_trend", "out_big", "out_small", "out_gap"))
         f = pct if prob else (lambda x: f"{x:.2f}")
+        has_pts = "pts" in r  # points/dollar translation available (out_range_atr only)
+        if has_pts:
+            pct_vs_typical = (r["cond"] / r["all"] - 1) * 100 if r["all"] else 0
+            cond_disp = f'{r["pts"]} pts <span class="muted">({r["cond"]:.2f}× ATR, {pct_vs_typical:+.0f}% vs typical)</span>'
+            all_disp = f'{r["pts_all"]} pts <span class="muted">({r["all"]:.2f}× ATR)</span>'
+        else:
+            cond_disp, all_disp = f(r["cond"]), f(r["all"])
         arrow = "▲" if r["cond"] > r["all"] else "▼"
         cls = "sig" if r["sig"] else "ns"
-        row = (f'<tr class="{cls}"><td>{r["name"]}</td><td class="num">{f(r["cond"])} '
-               f'<span class="ci">[{f(r["lo"])}–{f(r["hi"])}]</span></td><td class="num muted">{f(r["all"])}</td>'
+        row = (f'<tr class="{cls}"><td>{r["name"]}</td><td class="num">{cond_disp} '
+               f'<span class="ci">[{f(r["lo"])}–{f(r["hi"])}]</span></td><td class="num muted">{all_disp}</td>'
                f'<td class="num">{arrow} {"" if r["sig"] else "n.s."}</td></tr>')
         # IQR line: the actual spread of days like this — visually primary over
-        # the CI, which only describes uncertainty about the average.
+        # the CI, which only describes uncertainty about the average. Points +
+        # dollars when the NDX conversion is available, ATR multiple otherwise.
         if "p25" in r:
-            unit = " × ATR" if r["key"] == "out_range_atr" else ""
-            row += (f'<tr class="{cls}"><td colspan="4" class="iqr">Middle 50% of days like this: '
-                    f'{r["p25"]:.2f} – {r["p75"]:.2f}{unit}</td></tr>')
+            if has_pts:
+                iqr_text = (f'Middle 50% of days like this: {r["pts_p25"]}–{r["pts_p75"]} pts '
+                            f'<span class="muted">(~${r["usd_p25"]}–${r["usd_p75"]} per {p["instrument"]})</span>')
+            else:
+                iqr_text = f'Middle 50% of days like this: {r["p25"]:.2f} – {r["p75"]:.2f}'
+            row += f'<tr class="{cls}"><td colspan="4" class="iqr">{iqr_text}</td></tr>'
         return row
     feat_rows = "".join(f'<tr><td>{x["name"]}</td><td class="num">{x["value"]}</td><td class="num muted">{pct(x["pct_1y"])} pct</td></tr>' for x in p["features"])
     ev_rows = "".join(f'<li><b>{e["date"]}</b> {e["event"]}</li>' for e in p["events"]) or "<li>None in the next 10 days</li>"
@@ -187,7 +226,8 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>
 <div class="card"><table><tr><th>Why</th><th class="num">Value</th><th class="num">1y percentile</th></tr>{feat_rows}</table></div>
 <div class="card"><b>Scheduled events, next 10 days</b><ul style="margin-top:8px">{ev_rows}</ul></div>
-<div class="foot">Every number is a historical frequency conditioned on information available before the open, computed from: {p["data_source"]}. Nothing here predicts direction. Not financial advice.</div>
+<div class="foot">Every number is a historical frequency conditioned on information available before the open, computed from: {p["data_source"]}. Nothing here predicts direction. Not financial advice.
+{f' Point/dollar figures ({p["instrument"]}, ${p["dollars_per_point"]:.0f}/pt) are today\'s translation of the historical ATR-percent finding at the current index level (NDX {p["ndx_level"]:,.0f}) — they shift as the index does; the ATR multiple is the stable finding.' if p.get("ndx_level") else ""}</div>
 </body></html>"""
 
 

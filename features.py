@@ -65,6 +65,7 @@ def build(prices: pd.DataFrame, vix: pd.DataFrame | None = None) -> pd.DataFrame
     f = pd.DataFrame(index=p.index)
     # --- pre-open features -------------------------------------------------
     f["atr20"] = tr.rolling(20).mean().shift(1)              # excludes today
+    f["atr_pct"] = f.atr20 / prev_close                       # instrument-agnostic ATR (display conversions)
     f["prev_range_atr"] = (rng / f.atr20).shift(1)             # yesterday's range in ATR
     f["range_5_20"] = (rng.rolling(5).mean() / rng.rolling(20).mean()).shift(1)  # compression < 1
     f["gap"] = p.open / prev_close - 1

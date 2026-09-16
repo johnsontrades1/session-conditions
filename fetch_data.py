@@ -79,6 +79,7 @@ daily("^VIX", "1990-01-01", "vix.csv", ["open", "high", "low", "close"])
 daily("^VIX3M", "2007-01-01", "vix3m.csv", ["close"])
 vix3m_cboe()
 daily("^VVIX", "2007-01-01", "vvix.csv", ["close"])
+daily("^NDX", "2000-01-01", "ndx_daily.csv", ["close"])   # index level for point/dollar display
 
 intra = flat(yf.download("NQ=F", period="60d", interval="5m", auto_adjust=False, progress=False))
 if not intra.empty:
