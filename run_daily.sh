@@ -19,16 +19,6 @@ if ! "$PY" fetch_data.py >> "$LOG" 2>&1; then
     exit 1
 fi
 
-"$PY" fetch_databento.py >> "$LOG" 2>&1
-rc=$?
-if [ $rc -eq 1 ]; then
-    log "databento: no API key — fallback: yfinance opens"
-elif [ $rc -eq 2 ]; then
-    log "databento: COST GUARD ABORT — investigate before next pull; continuing on existing data"
-elif [ $rc -ne 0 ]; then
-    log "databento: exit $rc — continuing on existing data"
-fi
-
 if ! "$PY" today.py >> "$LOG" 2>&1; then
     log "FATAL: today.py failed — page not updated"
     exit 1

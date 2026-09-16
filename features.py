@@ -15,13 +15,10 @@ DATA = Path(__file__).parent / "data"
 def resolve_price_source(name="nq_daily.csv") -> tuple[str, str]:
     """Return (actual filename, human-readable open-source description).
 
-    NQ default upgrades to true RTH bars when fetch_databento.py has produced
-    them; explicit filenames are never overridden. The description string goes
-    on the published page so the data source and the page copy can't silently
-    desync (that already happened once — NQ Globex numbers under QQQ copy).
+    The description string goes on the published page so the data source and
+    the page copy can't silently desync (that already happened once — NQ
+    Globex numbers under QQQ copy).
     """
-    if name == "nq_daily.csv" and (DATA / "nq_rth_daily.csv").exists():
-        return "nq_rth_daily.csv", "NQ futures, RTH 9:30 ET opens (Databento)"
     if name == "nq_daily.csv":
         return "nq_daily.csv", "NQ futures, Globex opens (yfinance) — gap stats contaminated"
     if name == "qqq_daily.csv":

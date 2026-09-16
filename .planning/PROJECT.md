@@ -25,9 +25,7 @@ only shows if its CI excludes the unconditional mean and it survives the stabili
 
 ### Active
 
-- [ ] RTH data via Databento (GLBX.MDP3) — true 9:30 ET opens, kill Globex-open gap contamination
-- [ ] Label kill/keep pass on RTH data — resolve TREND inversion, validate/kill BIG_GAP, sweeps within 2-knob limit
-- [ ] Automated daily deploy — LaunchAgent pre-open run + GitHub Pages publish
+(none currently active)
 
 ### Out of Scope
 
@@ -44,7 +42,8 @@ only shows if its CI excludes the unconditional mean and it survives the stabili
   COILED compression persists (no coiled-spring), BIG_GAP n=40 with 91% baseline gap-fill
   rate screaming Globex-open contamination, HIGH_VOL and EVENT are the cleanest labels.
 - User trades NQ/MNQ on prop accounts (TopstepX/Apex), NY 7-10am ET primary kill zone.
-- Databento chosen for RTH bars: free $125 credit, CME GLBX.MDP3.
+- Databento (CME GLBX.MDP3) evaluated for RTH bars, dropped — QQQ's yfinance open
+  IS the true 9:30 ET RTH open, free, no API key or spend required.
 - venv at project root has yfinance/pandas/numpy.
 
 ## Constraints
@@ -52,14 +51,14 @@ only shows if its CI excludes the unconditional mean and it survives the stabili
 - **Honesty rules** (see CLAUDE.md): CI must exclude baseline; stability flip kills a label;
   max 2 knobs per label; feature/outcome separation is inviolable; no forecasts.
 - **Tech stack**: Python + pandas, static HTML output — no server, no framework.
-- **Budget**: Databento free credit only; GitHub Pages free tier.
+- **Budget**: free-tier data only (yfinance, CBOE public CSV); GitHub Pages free tier.
 - **Schedule**: daily pipeline must complete before ~9:15 ET so the page is ready pre-open.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Databento over ProjectX for RTH data | Free credit, proven CME history depth, stable API | — Pending |
+| Databento dropped in favor of QQQ RTH | Free, no API key/spend, QQQ open already IS true RTH open | ✓ Good |
 | Local LaunchAgent + GitHub Pages deploy | Automation on Mac Mini, phone-viewable URL, zero cost | — Pending |
 | Event Playbook deferred to v2 | Needs multi-year intraday data not yet acquired | — Pending |
 | Roadmap/planning inline, no research agents | 6-file codebase fully known; agent spawns waste tokens | — Pending |

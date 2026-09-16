@@ -27,9 +27,11 @@ the label is wrong, not the rule.
 
 ## Known data caveats
 
-- yfinance NQ daily `open` = Globex open, not 9:30 ET RTH. Gap features are noisy
-  until swapped to ProjectX/Databento RTH bars. Cross-check gap stats on QQQ.
-- CPI dates 2025+ unverified against bls.gov/schedule.
+- yfinance NQ daily `open` = Globex open, not 9:30 ET RTH — the live page renders
+  from `qqq_daily.csv` instead (QQQ's open is the true RTH open). Never use
+  `nq_daily.csv` for gap stats.
+- FOMC/CPI calendars in `events.py` need periodic refresh — `tests/test_events.py`
+  fails once either runs under 60 days from its end.
 
 ## Failure mode to avoid
 
@@ -55,7 +57,7 @@ only shows if its CI excludes the unconditional mean and it survives the stabili
 - **Honesty rules** (see CLAUDE.md): CI must exclude baseline; stability flip kills a label;
   max 2 knobs per label; feature/outcome separation is inviolable; no forecasts.
 - **Tech stack**: Python + pandas, static HTML output — no server, no framework.
-- **Budget**: Databento free credit only; GitHub Pages free tier.
+- **Budget**: free-tier data only (yfinance, CBOE public CSV); GitHub Pages free tier.
 - **Schedule**: daily pipeline must complete before ~9:15 ET so the page is ready pre-open.
 <!-- GSD:project-end -->
 
