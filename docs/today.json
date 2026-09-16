@@ -1,136 +1,136 @@
 {
-  "as_of": "2026-09-14",
-  "label": "COILED",
-  "description": "Recent ranges are compressed vs. the 20-day norm. Volatility clusters \u2014 quiet tape tends to stay quiet near-term, so small-range days are MORE likely, not less. The 'coiled spring' pop is not the base case.",
-  "n_days_like_this": 1131,
-  "n_all": 6901,
+  "as_of": "2026-09-15",
+  "label": "NEUTRAL",
+  "description": "Nothing in the pre-open regime data stands out. Treat base rates as unconditional.",
+  "n_days_like_this": 2977,
+  "n_all": 6902,
   "sample_start": "1999-04-08",
   "features": [
     {
       "key": "gap_atr",
       "name": "Opening gap (ATR units)",
-      "value": 1.468,
-      "pct_1y": 0.98
+      "value": 0.047,
+      "pct_1y": 0.08
     },
     {
       "key": "range_5_20",
       "name": "5d/20d range ratio",
-      "value": 0.838,
-      "pct_1y": 0.27
+      "value": 0.962,
+      "pct_1y": 0.48
     },
     {
       "key": "prev_range_atr",
       "name": "Yesterday's range (ATR)",
-      "value": 0.504,
-      "pct_1y": 0.13
+      "value": 1.298,
+      "pct_1y": 0.89
     },
     {
       "key": "trend_20_atr",
       "name": "20-day move (ATR)",
-      "value": -2.185,
-      "pct_1y": 0.06
+      "value": -2.679,
+      "pct_1y": 0.04
     },
     {
       "key": "er_10",
       "name": "Efficiency ratio (10d)",
-      "value": 0.149,
-      "pct_1y": 0.32
+      "value": 0.169,
+      "pct_1y": 0.37
     },
     {
       "key": "pos_20d",
       "name": "Position in 20d range",
-      "value": 0.382,
-      "pct_1y": 0.22
+      "value": 0.203,
+      "pct_1y": 0.13
     },
     {
       "key": "vix",
       "name": "VIX (prior close)",
-      "value": 15.84,
-      "pct_1y": 0.22
+      "value": 17.1,
+      "pct_1y": 0.49
     },
     {
       "key": "vix_term",
       "name": "VIX / VIX3M",
-      "value": 0.852,
-      "pct_1y": 0.4
+      "value": 0.887,
+      "pct_1y": 0.64
     },
     {
       "key": "vix_rank_1y",
       "name": "VIX 1y percentile",
-      "value": 0.232,
-      "pct_1y": 0.2
+      "value": 0.492,
+      "pct_1y": 0.48
     },
     {
       "key": "rv5_rv20",
       "name": "Realized vol 5d/20d",
-      "value": 0.882,
-      "pct_1y": 0.44
+      "value": 0.923,
+      "pct_1y": 0.48
     }
   ],
   "base_rates": [
     {
       "key": "out_range_atr",
       "name": "Session range (\u00d7 ATR)",
-      "cond": 0.79,
-      "lo": 0.77,
-      "hi": 0.809,
+      "cond": 0.925,
+      "lo": 0.912,
+      "hi": 0.939,
       "all": 0.934,
-      "sig": true,
-      "p25": 0.555,
-      "p75": 0.952,
-      "pts": 252,
-      "pts_all": 297,
-      "pts_p25": 177,
-      "pts_p75": 303,
-      "usd_p25": 354,
-      "usd_p75": 606
+      "sig": false,
+      "p25": 0.659,
+      "p75": 1.107,
+      "pts": 308,
+      "pts_all": 311,
+      "pts_p25": 220,
+      "pts_p75": 369,
+      "usd_p25": 440,
+      "usd_p75": 738
     },
     {
       "key": "out_eff",
       "name": "Directional efficiency",
-      "cond": 0.477,
-      "lo": 0.461,
-      "hi": 0.492,
+      "cond": 0.466,
+      "lo": 0.457,
+      "hi": 0.475,
       "all": 0.472,
       "sig": false,
-      "p25": 0.25,
-      "p75": 0.695
+      "p25": 0.239,
+      "p75": 0.687
     },
     {
       "key": "out_trend_day",
       "name": "P(trend day)",
-      "cond": 0.359,
-      "lo": 0.332,
-      "hi": 0.385,
-      "all": 0.356,
+      "cond": 0.348,
+      "lo": 0.33,
+      "hi": 0.364,
+      "all": 0.357,
       "sig": false
     },
     {
       "key": "out_big_range",
       "name": "P(range \u2265 1.3 ATR)",
-      "cond": 0.075,
-      "lo": 0.06,
-      "hi": 0.091,
+      "cond": 0.138,
+      "lo": 0.126,
+      "hi": 0.15,
       "all": 0.152,
       "sig": true
     },
     {
       "key": "out_small_range",
       "name": "P(range \u2264 0.7 ATR)",
-      "cond": 0.471,
-      "lo": 0.445,
-      "hi": 0.5,
-      "all": 0.319,
+      "cond": 0.293,
+      "lo": 0.277,
+      "hi": 0.309,
+      "all": 0.318,
       "sig": true
     },
     {
       "key": "out_gap_filled",
       "name": "P(gap filled)",
-      "cond": 0.646,
-      "lo": 0.619,
-      "hi": 0.673,
+      "cond": 0.685,
+      "lo": 0.668,
+      "hi": 0.701,
       "all": 0.674,
-      "sig": true
+      "sig": false
     }
   ],
   "events": [
@@ -148,7 +148,7 @@
     }
   ],
   "label_counts": {
-    "NEUTRAL": 2976,
+    "NEUTRAL": 2977,
     "COILED": 1131,
     "HIGH_VOL": 1131,
     "STRETCHED": 970,
@@ -156,20 +156,20 @@
   },
   "modifier_counts": {
     "BIG_GAP": 793,
-    "EVENT": 1058
+    "EVENT": 1059
   },
   "modifiers": [
     {
-      "name": "BIG_GAP",
-      "description": "Opening gap is large (\u22650.6 ATR). Same-day fill rate is low \u2014 arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider.",
-      "line": "793 days like this: P(gap filled) 27% vs 67% all days \u00b7 range 1.14\u00d7ATR vs 0.93"
+      "name": "EVENT",
+      "description": "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common \u2014 real but small (validated on the full 1999+ calendar).",
+      "line": "1059 days like this: range 0.97\u00d7ATR vs 0.93 \u00b7 P(range \u2264 0.7 ATR) 28% vs 32%"
     }
   ],
   "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
-  "age_bdays_at_render": 1,
+  "age_bdays_at_render": 0,
   "stale_at_render": false,
   "instrument": "MNQ",
   "dollars_per_point": 2.0,
   "ndx_level": 28937.8,
-  "atr_points": 318.5
+  "atr_points": 333.5
 }
