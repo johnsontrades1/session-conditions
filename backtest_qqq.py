@@ -41,29 +41,46 @@ def sweep(df, knob, values):
 
 
 def gap_bands(df, prices):
-    """Same-day gap-fill by gap-size band vs a mechanical distance null.
+    """Same-day gap-fill by gap-size band vs two mechanical nulls.
 
-    Null: P(fill) if the day's adverse excursion from the open were drawn from
-    the unconditional excursion distribution — i.e., how much of the fill-rate
-    decline is just 'bigger gap = longer way back'. Caveat: the null is not
-    vol-matched, so a positive diff on big-gap days is at least partly their
-    wider-than-average ranges, not behavior.
+    Unconditional null: adverse excursion (in ATR) drawn from all days — asks how
+    much of the fill decline is 'bigger gap = longer way back'.
+    Vol-matched null: excursion drawn from days in the same realized-range decile —
+    additionally controls for gap days being wide-range days. The 2026-09-15 run
+    showed vol-matching collapses the big-gap excess to +2.3pp, 95% CI [-0.2,+4.9]:
+    fill odds are what distance + that day's range imply, nothing behavioral.
     """
     p = prices.loc[df.index]
     prev_close = p.close.shift(1).loc[df.index]
-    up = p.open > prev_close
-    exc = np.where(up, (p.open - p.low), (p.high - p.open)) / df.atr20
-    exc_sorted = np.sort(exc[~np.isnan(exc)])
-    p_mech = lambda g: 1.0 - np.searchsorted(exc_sorted, g, side="left") / len(exc_sorted)
-    print(f"{'gap_atr band':>14} {'n':>6} {'actual fill':>12} {'mech null':>10} {'diff':>7}")
+    up = (p.open > prev_close).to_numpy()
+    atr = df.atr20.to_numpy()
+    exc = np.where(up, (p.open - p.low).to_numpy(), (p.high - p.open).to_numpy()) / atr
+    gap = df.gap_atr.to_numpy()
+    rng_atr = df.out_range_atr.to_numpy()
+    filled = df.out_gap_filled.to_numpy().astype(float)
+    ok = ~(np.isnan(exc) | np.isnan(gap) | np.isnan(rng_atr))
+    exc, gap, rng_atr, filled = exc[ok], gap[ok], rng_atr[ok], filled[ok]
+
+    exc_sorted = np.sort(exc)
+    p_uncond = lambda g: 1.0 - np.searchsorted(exc_sorted, g, side="left") / len(exc_sorted)
+    dec = pd.qcut(rng_atr, 10, labels=False)
+    bucket = {b: np.sort(exc[dec == b]) for b in range(10)}
+
+    def p_vol(i):
+        e = bucket[dec[i]]
+        return 1.0 - np.searchsorted(e, gap[i], side="left") / len(e)
+
+    print(f"{'gap_atr band':>14} {'n':>6} {'actual':>8} {'uncond':>8} {'vol-matched':>12} {'diff':>7}")
     for lo, hi in [(0.0, 0.1), (0.1, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 1.0), (1.0, np.inf)]:
-        m = (df.gap_atr >= lo) & (df.gap_atr < hi) & ~np.isnan(exc)
+        m = (gap >= lo) & (gap < hi)
         if m.sum() < 20:
             continue
-        act = df.out_gap_filled[m].mean()
-        mech = np.mean([p_mech(g) for g in df.gap_atr[m]])
+        ii = np.where(m)[0]
+        act = filled[m].mean()
+        u = np.mean([p_uncond(g) for g in gap[m]])
+        v = np.mean([p_vol(i) for i in ii])
         hi_s = "inf" if hi == np.inf else f"{hi:.1f}"
-        print(f"[{lo:.1f},{hi_s}) {m.sum():>9} {act:>11.3f} {mech:>10.3f} {act - mech:>+7.3f}")
+        print(f"[{lo:.1f},{hi_s}) {m.sum():>9} {act:>8.3f} {u:>8.3f} {v:>12.3f} {act - v:>+7.3f}")
 
 
 def main():

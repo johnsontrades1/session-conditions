@@ -62,6 +62,36 @@ on big bands mean large gaps fill somewhat MORE than distance alone implies —
 plausibly just wider ranges on gap days (null not vol-matched), certainly not a
 "gaps don't fill" behavioral effect.
 
+### Vol-matched null (added 2026-09-15) — settles the residual
+
+Method: redraw the null with the day's realized range controlled. Two variants,
+built independently so the answer can't come from method-picking:
+- **A (primary):** adverse excursion drawn from days in the same realized-range
+  (out_range_atr) decile.
+- **B (check):** fill iff open-placement fraction ≥ gap/range, with the placement
+  fraction drawn unconditionally.
+
+| gap_atr band | n | actual | uncond null | vol-matched A | diff A | diff B |
+|---|---|---|---|---|---|---|
+| [0.0,0.1) | 1666 | 93.9% | 92.9% | 92.8% | +1.1pp | +2.1pp |
+| [0.1,0.2) | 1453 | 81.5% | 79.8% | 79.5% | +2.0pp | +2.5pp |
+| [0.2,0.4) | 2015 | 62.2% | 61.5% | 61.8% | +0.5pp | −1.8pp |
+| [0.4,0.6) | 974 | 44.5% | 40.7% | 43.8% | +0.7pp | −1.5pp |
+| [0.6,1.0) | 623 | 30.5% | 21.5% | 27.8% | +2.7pp | +3.1pp |
+| [1.0,∞) | 170 | 15.9% | 5.5% | 15.0% | +0.9pp | +1.3pp |
+
+**≥0.6 aggregate:** actual 27.4%, vol-matched 25.0%, diff **+2.3pp, 95% bootstrap CI
+[−0.2, +4.9] — includes zero.** Half-split: +3.0pp / +1.6pp (no flip, but both small
+and individually insignificant). Variants agree.
+
+**Conclusion: the fill-rate decline is pure arithmetic.** The +9–10pp excess over the
+unconditional null was entirely gap days being wide-range days. There is no behavioral
+asymmetry in either direction worth reporting. Page copy stripped of the residual
+"mostly"/"not because these days refuse" hedging — it now states fill odds match
+distance + range arithmetic, full stop. (Note the vol-matched null conditions on
+same-day realized range, so this is a decomposition of what happened, not a tradable
+pre-open quantity — the pre-open version of the fill number is the band table itself.)
+
 ## Page copy corrections applied
 
 DESCR strings that contradicted or overclaimed the evidence, rewritten (2 passes):

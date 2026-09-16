@@ -25,7 +25,7 @@ DESCR = {
     "EXPANDED": "Ranges have already expanded well above the 20-day norm. Volatility clusters — big-range days tend to stay elevated near-term. Don't fade range size early.",
     "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common — size accordingly.",
     "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Calendar coverage is complete only since 2022, so stats below use 2022+ — suggestive (wider ranges), but UNPROVEN over longer history.",
-    "BIG_GAP":  "Opening gap is large (≥0.6 ATR). Same-day fill rate is low (~27% vs ~67% all days) mostly as arithmetic — the fill distance is long relative to a typical day's range — not because these days refuse to fill. Ranges run wider; check the table.",
+    "BIG_GAP":  "Opening gap is large (≥0.6 ATR). Same-day fill rate is low (~27% vs ~67% all days) — this is arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider; check the table.",
     "NEUTRAL":  "Nothing in the pre-open data stands out. Treat base rates as unconditional.",
 }
 FEATS = {
