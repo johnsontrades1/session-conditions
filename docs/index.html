@@ -16,6 +16,31 @@ tr.ns td{opacity:.55} th{text-align:left;color:var(--muted);font-weight:500;font
 .modcopy{font-size:13px;color:var(--muted);margin-top:2px}
 .modline{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}
 .stale{display:none;background:#3a1d1d;border:1px solid #7a2e2e;color:#ffb4b4;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-weight:600}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.stamp{font-family:var(--mono,ui-monospace);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:14px}
+@media (max-width:640px){.split{grid-template-columns:1fr;gap:18px}}
+.split svg{display:block;width:100%;max-width:100%;height:auto}
+.cap{font-size:11.5px;color:var(--muted);text-align:center;margin:6px 0 0}
+.read{display:flex;flex-direction:column;gap:14px}
+.read-item{display:flex;flex-direction:column;gap:2px}
+.read-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.read-value{font-size:14.5px} .read-value.null-result{color:var(--muted)}
+.odds{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.odds-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.odds-head h3{font-size:13px;margin:0;font-weight:600} .odds-head span{font-size:12px;color:var(--muted)}
+.slider-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.slider-row label{font-size:13px;color:var(--muted);flex:1 1 auto;min-width:170px}
+input[type=range]{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22px;cursor:pointer}
+.pts{font-family:var(--mono,ui-monospace);font-weight:600;color:var(--acc);font-size:15px;min-width:74px;text-align:right}
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:118px minmax(0,1fr) 46px;gap:10px;align-items:center}
+.bar-name{font-size:12.5px;color:var(--muted)} .bar-name.is-today{color:var(--fg);font-weight:500}
+.track{display:block;background:#1d212a;border-radius:3px;height:9px;overflow:hidden}
+.fill{display:block;height:100%;background:#2a7c76;border-radius:3px;transition:width .12s ease-out;width:0}
+.fill.is-today{background:var(--acc)}
+.bar-pct{font-family:var(--mono,ui-monospace);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.verdict{margin-top:14px;font-size:13.5px;color:var(--muted)} .verdict b{color:var(--fg);font-weight:600}
 </style></head><body>
 <div id="stale" class="stale"></div>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for 2026-09-15. Base rates, not forecasts. Data: QQQ, RTH 9:30 ET opens (yfinance)</div>
@@ -38,6 +63,80 @@ tr.ns td{opacity:.55} th{text-align:left;color:var(--muted);font-weight:500;font
 <div class="card"><div class="label">NEUTRAL</div><div>Nothing in the pre-open regime data stands out. Treat base rates as unconditional.</div>
 <div class="muted" style="margin-top:8px">2977 sessions like this out of 6902 since 1999-04-08</div>
 <div class="mod"><div class="modname">+ EVENT</div><div class="modcopy">Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common — real but small (validated on the full 1999+ calendar).</div><div class="modline">1059 days like this: range 0.97×ATR vs 0.93 · P(range ≤ 0.7 ATR) 28% vs 32%</div></div></div>
+<div class="card">
+    <div class="section-head"><h2 style="font-size:16px;margin:0;font-weight:600">Range envelope</h2>
+      <span class="stamp">NEUTRAL + EVENT · n=2,977</span></div>
+    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the 2,977 past sessions that looked like this one. Range only — never direction.</p>
+    <div class="split">
+      <div><svg viewBox="0 0 340 280" role="img" aria-label="Range envelope: 2977 days like this reached a median of +122 above the open and 124 below, middle 50% spanning 60-211 up and 59-228 down.">
+  <g transform="translate(0,-33)">
+  <rect x="112" y="49.0" width="96" height="81.1" fill="#4fd1c5" opacity="0.10"/>
+  <rect x="112" y="169.4" width="96" height="98.6" fill="#4fd1c5" opacity="0.10"/>
+  <rect x="112" y="79.9" width="96" height="50.2" fill="#4fd1c5" opacity="0.28"/>
+  <rect x="112" y="169.4" width="96" height="56.4" fill="#4fd1c5" opacity="0.28"/>
+  <line x1="160" y1="49.0" x2="160" y2="268.0" stroke="#4fd1c5" stroke-width="1" opacity="0.45"/>
+  <line x1="140" y1="49.0" x2="180" y2="49.0" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>
+  <line x1="140" y1="268.0" x2="180" y2="268.0" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>
+  <line x1="104" y1="109.6" x2="216" y2="109.6" stroke="#4fd1c5" stroke-width="2"/>
+  <line x1="104" y1="191.2" x2="216" y2="191.2" stroke="#4fd1c5" stroke-width="2"/>
+  <line x1="66" y1="150" x2="254" y2="150" stroke="#e8eaf0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="60" y="154" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="10.5" text-anchor="end" letter-spacing="0.8">OPEN</text>
+  <text x="226" y="53.0" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">+304</text>
+  <text x="226" y="113.6" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500">+122</text>
+  <text x="226" y="134.1" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">+60</text>
+  <text x="226" y="173.4" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">-59</text>
+  <text x="226" y="195.2" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500">-124</text>
+  <text x="226" y="272.0" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">-355</text>
+  <text x="104" y="38.0" fill="#8b93a7" font-family="IBM Plex Sans, sans-serif" font-size="10" letter-spacing="1.1">HIGH REACHED</text>
+  <text x="104" y="287.0" fill="#8b93a7" font-family="IBM Plex Sans, sans-serif" font-size="10" letter-spacing="1.1">LOW REACHED</text>
+  </g>
+</svg>
+        <p class="cap">Solid line = median · shaded = middle 50% · outer = 10th-90th · points at NDX level</p>
+      </div>
+      <div class="read">
+        <div class="read-item"><span class="read-label">Size of day</span>
+          <span class="read-value"><span class="num">309 pts</span> typical, vs
+          <span class="num">311 pts</span> on all days — about
+          <b>1% smaller</b>.</span></div>
+        <div class="read-item"><span class="read-label">Direction</span>
+          <span class="read-value null-result">No edge. Days like this closed above the open <span class="num">52%</span>
+          of the time <span class="ci">[50-54%]</span> — a coin flip, and the page won't pretend otherwise.</span></div>
+        <div class="read-item"><span class="read-label">Big-range odds</span>
+          <span class="read-value">Only <span class="num">14%</span> ran &ge;1.3&times; ATR, against <span class="num">15%</span> normally.</span></div>
+        
+      </div>
+    </div>
+    <div class="odds">
+      <div class="odds-head"><h3>Does today clear your bar?</h3><span>Set the range your setup needs to work.</span></div>
+      <div class="slider-row"><label for="needpts">Minimum session range</label>
+        <input type="range" id="needpts" min="0" max="55" step="1" value="14">
+        <span class="pts" id="ptsout">190 pts</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-name is-today">Days like today</span>
+          <span class="track"><span class="fill is-today" id="fillA"></span></span><span class="bar-pct" id="pctA"></span></div>
+        <div class="bar-row"><span class="bar-name">All days</span>
+          <span class="track"><span class="fill" id="fillB"></span></span><span class="bar-pct" id="pctB"></span></div>
+      </div>
+      <p class="verdict" id="verdict"></p>
+    </div>
+    <script>
+    (function(){
+      var PTS=[50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600], TODAY=[100.0, 100.0, 100.0, 100.0, 99.9, 99.8, 99.6, 99.2, 98.6, 97.1, 95.9, 93.7, 91.4, 88.8, 85.8, 82.2, 78.7, 75.0, 72.1, 67.8, 64.1, 60.0, 55.8, 51.9, 48.0, 44.1, 41.0, 37.8, 35.2, 32.8, 30.0, 27.5, 24.7, 22.6, 20.5, 19.0, 17.5, 16.1, 14.4, 13.2, 12.0, 10.8, 9.5, 8.4, 8.0, 7.3, 6.7, 6.1, 5.7, 5.1, 4.7, 4.3, 3.9, 3.6, 3.2, 2.7], ALL=[100.0, 100.0, 100.0, 99.9, 99.8, 99.6, 99.1, 98.6, 97.7, 96.1, 94.3, 91.9, 89.5, 86.9, 83.6, 80.0, 76.5, 72.9, 69.5, 65.6, 61.9, 58.2, 54.4, 50.7, 47.2, 43.8, 41.1, 38.2, 35.5, 32.9, 30.3, 28.1, 25.8, 23.8, 21.8, 20.3, 18.7, 17.3, 15.7, 14.5, 13.1, 12.1, 11.0, 9.9, 9.3, 8.7, 7.9, 7.3, 6.8, 6.3, 5.9, 5.5, 5.0, 4.7, 4.3, 4.0];
+      var slider=document.getElementById('needpts'), ptsout=document.getElementById('ptsout'),
+          fillA=document.getElementById('fillA'), fillB=document.getElementById('fillB'),
+          pctA=document.getElementById('pctA'), pctB=document.getElementById('pctB'), verdict=document.getElementById('verdict');
+      function render(){
+        var i=Number(slider.value), pts=PTS[i], a=TODAY[i], b=ALL[i];
+        ptsout.textContent=pts+' pts'; fillA.style.width=a+'%'; fillB.style.width=b+'%';
+        pctA.textContent=a+'%'; pctB.textContent=b+'%';
+        var diff=a-b, shape = diff<=-7 ? 'Meaningfully worse odds than a normal session.'
+                    : diff>=7 ? 'Better odds than a normal session.' : 'About the same odds as a normal session.';
+        verdict.innerHTML='<b>'+a+'% of days like this</b> gave at least '+pts+' points of range, against '+b+'% of all days. '+shape+' What that\u2019s worth is your call.';
+      }
+      slider.addEventListener('input', render); render();
+    })();
+    </script>
+  </div>
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 <tr class="ns"><td>Session range (× ATR)</td><td class="num">308 pts <span class="muted">(0.93× ATR, -1% vs typical)</span> <span class="ci">[0.91–0.94]</span></td><td class="num muted">311 pts <span class="muted">(0.93× ATR)</span></td><td class="num">▼ n.s.</td></tr><tr class="ns"><td colspan="4" class="iqr">Middle 50% of days like this: 220–369 pts <span class="muted">(~$440–$738 per MNQ)</span></td></tr><tr class="ns"><td>Directional efficiency</td><td class="num">0.47 <span class="ci">[0.46–0.47]</span></td><td class="num muted">0.47</td><td class="num">▼ n.s.</td></tr><tr class="ns"><td colspan="4" class="iqr">Middle 50% of days like this: 0.24 – 0.69</td></tr><tr class="ns"><td>P(trend day)</td><td class="num">35% <span class="ci">[33%–36%]</span></td><td class="num muted">36%</td><td class="num">▼ n.s.</td></tr><tr class="sig"><td>P(range ≥ 1.3 ATR)</td><td class="num">14% <span class="ci">[13%–15%]</span></td><td class="num muted">15%</td><td class="num">▼ </td></tr><tr class="sig"><td>P(range ≤ 0.7 ATR)</td><td class="num">29% <span class="ci">[28%–31%]</span></td><td class="num muted">32%</td><td class="num">▼ </td></tr><tr class="ns"><td>P(gap filled)</td><td class="num">68% <span class="ci">[67%–70%]</span></td><td class="num muted">67%</td><td class="num">▲ n.s.</td></tr></table>
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>

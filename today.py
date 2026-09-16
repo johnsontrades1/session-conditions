@@ -13,7 +13,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from features import build, load_prices, load_vix, resolve_price_source
-from regime import label, modifiers, modifier_rates, base_rates, OUTCOMES
+from regime import label, modifiers, modifier_rates, base_rates, prob_at_least, OUTCOMES
+
+ENV_OUTCOMES = ["out_up_exc", "out_dn_exc", "out_close_up"]  # range-envelope section
+SLIDER_GRID_PTS = list(range(50, 601, 10))
 from events import build_calendar, FULL_COVERAGE_START
 
 SITE = Path(__file__).parent / "docs"
@@ -63,7 +66,7 @@ def main(prices_file: str):
     today = df.index[-1]
     row, lab = df.iloc[-1], labs.iloc[-1]
     df_stats, labs_stats = df, labs
-    br = base_rates(df_stats, labs_stats)
+    br = base_rates(df_stats, labs_stats, outcomes=OUTCOMES + ENV_OUTCOMES)
 
     # Active modifiers, each scored INDEPENDENTLY vs the unconditional baseline.
     # No intersection stats — n goes thin, deliberately out of scope.
@@ -101,6 +104,60 @@ def main(prices_file: str):
         if len(ndx):
             ndx_level = float(ndx.iloc[-1])
             atr_points = float(row["atr_pct"]) * ndx_level
+
+    # --- Range Envelope: excursion above/below the open, direction null,
+    # and a "does today clear my bar" slider driven by real empirical odds.
+    # 2026-09-16 pre-flight null-check on out_close_up across every primary
+    # label + modifier came back flat everywhere except a marginal, decaying,
+    # non-robust STRETCHED reading (see QQQ-BACKTEST.md) — ruled NULL. No
+    # directional claim ships from this section; both excursion halves use
+    # the identical color/geometry logic on purpose.
+    def _cvt(atr_mult):
+        return round(atr_mult * atr_points) if atr_points else None
+
+    up_p = {q: float(br.loc[lab, f"out_up_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
+    dn_p = {q: float(br.loc[lab, f"out_dn_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
+    gap_info = None
+    if bool(mods["BIG_GAP"].iloc[-1]):
+        gap_mr = modifier_rates(df_stats, mods["BIG_GAP"].reindex(df_stats.index), "BIG_GAP", outcomes=["out_gap_filled"])
+        gap_feat = next((f for f in feats if f["key"] == "gap_atr"), None)
+        gap_info = {
+            "atr": gap_feat["value"] if gap_feat else None,
+            "pct_1y": round(gap_feat["pct_1y"] * 100) if gap_feat else None,
+            "fill_pct": round(float(gap_mr.loc["BIG_GAP", "out_gap_filled"]) * 100),
+        }
+
+    slider = None
+    if atr_points:
+        thresholds_atr = [g / atr_points for g in SLIDER_GRID_PTS]
+        x_today = df_stats.loc[labs_stats == lab, "out_range_atr"].to_numpy(dtype=float)
+        x_all = df_stats["out_range_atr"].to_numpy(dtype=float)
+        p_today = prob_at_least(x_today, thresholds_atr)
+        p_all = prob_at_least(x_all, thresholds_atr)
+        slider = {
+            "pts": SLIDER_GRID_PTS,
+            "today": [round(p_today[t] * 100, 1) for t in thresholds_atr],
+            "all": [round(p_all[t] * 100, 1) for t in thresholds_atr],
+        }
+
+    envelope = {
+        "n": int(br.loc[lab, "n"]),
+        "up": {str(q): {"atr": round(v, 3), "pts": _cvt(v)} for q, v in up_p.items()},
+        "dn": {str(q): {"atr": round(v, 3), "pts": _cvt(v)} for q, v in dn_p.items()},
+        "close_up_pct": round(float(br.loc[lab, "out_close_up"]) * 100, 1),
+        "close_up_lo": round(float(br.loc[lab, "out_close_up_lo"]) * 100, 1),
+        "close_up_hi": round(float(br.loc[lab, "out_close_up_hi"]) * 100, 1),
+        "big_range_today": round(float(br.loc[lab, "out_big_range"]) * 100),
+        "big_range_all": round(float(br.loc["ALL", "out_big_range"]) * 100),
+        "size_today_pts": _cvt(float(br.loc[lab, "out_range_atr"])),
+        "size_all_pts": _cvt(float(br.loc["ALL", "out_range_atr"])),
+        "size_today_atr": round(float(br.loc[lab, "out_range_atr"]), 2),
+        "size_all_atr": round(float(br.loc["ALL", "out_range_atr"]), 2),
+        "size_p25_pts": _cvt(float(br.loc[lab, "out_range_atr_p25"])),
+        "size_p75_pts": _cvt(float(br.loc[lab, "out_range_atr_p75"])),
+        "gap": gap_info,
+        "slider": slider,
+    }
 
     rates = []
     for oc in OUTCOMES:
@@ -145,10 +202,134 @@ def main(prices_file: str):
         "instrument": INSTRUMENT["name"], "dollars_per_point": INSTRUMENT["dollars_per_point"],
         "ndx_level": round(ndx_level, 1) if ndx_level else None,
         "atr_points": round(atr_points, 1) if atr_points else None,
+        "envelope": envelope,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
     print(f"{today.date()}  →  {lab}   ({payload['n_days_like_this']} similar sessions since {payload['sample_start']})")
+
+
+def envelope_svg(env: dict) -> str:
+    """Range envelope: excursion above/below the open. Geometry scaled from
+    the REAL p10/p25/p50/p75/p90 of this label's out_up_exc/out_dn_exc — not
+    the mockup's fixed coordinates. Both halves use identical styling; this
+    is a range display, never a directional one (see honesty rule 5)."""
+    up, dn = env["up"], env["dn"]
+    unit_pts = up["50"]["pts"] is not None
+    def lbl(d, q): return f'{d[q]["pts"]}' if unit_pts else f'{d[q]["atr"]:.2f}×'
+    def sign(v): return f"+{v}" if unit_pts else v
+
+    OPEN_Y, MAX_PX = 150, 118
+    max_extent = max(up["90"]["atr"], dn["90"]["atr"]) or 1.0
+    def y_up(q): return OPEN_Y - (up[q]["atr"] / max_extent) * MAX_PX
+    def y_dn(q): return OPEN_Y + (dn[q]["atr"] / max_extent) * MAX_PX
+
+    u90, u75, u50, u25 = y_up("90"), y_up("75"), y_up("50"), y_up("25")
+    d90, d75, d50, d25 = y_dn("90"), y_dn("75"), y_dn("50"), y_dn("25")
+    top, bot = u90 - 16, d90 + 25
+
+    return f"""<svg viewBox="0 0 340 {bot - top + 20:.0f}" role="img" aria-label="Range envelope: {env['n']} days like this reached a median of {sign(lbl(up,'50'))} above the open and {lbl(dn,'50')} below, middle 50% spanning {lbl(up,'25')}-{lbl(up,'75')} up and {lbl(dn,'25')}-{lbl(dn,'75')} down.">
+  <g transform="translate(0,{-top:.0f})">
+  <rect x="112" y="{u90:.1f}" width="96" height="{u25-u90:.1f}" fill="#4fd1c5" opacity="0.10"/>
+  <rect x="112" y="{d25:.1f}" width="96" height="{d90-d25:.1f}" fill="#4fd1c5" opacity="0.10"/>
+  <rect x="112" y="{u75:.1f}" width="96" height="{u25-u75:.1f}" fill="#4fd1c5" opacity="0.28"/>
+  <rect x="112" y="{d25:.1f}" width="96" height="{d75-d25:.1f}" fill="#4fd1c5" opacity="0.28"/>
+  <line x1="160" y1="{u90:.1f}" x2="160" y2="{d90:.1f}" stroke="#4fd1c5" stroke-width="1" opacity="0.45"/>
+  <line x1="140" y1="{u90:.1f}" x2="180" y2="{u90:.1f}" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>
+  <line x1="140" y1="{d90:.1f}" x2="180" y2="{d90:.1f}" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>
+  <line x1="104" y1="{u50:.1f}" x2="216" y2="{u50:.1f}" stroke="#4fd1c5" stroke-width="2"/>
+  <line x1="104" y1="{d50:.1f}" x2="216" y2="{d50:.1f}" stroke="#4fd1c5" stroke-width="2"/>
+  <line x1="66" y1="{OPEN_Y}" x2="254" y2="{OPEN_Y}" stroke="#e8eaf0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="60" y="{OPEN_Y+4}" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="10.5" text-anchor="end" letter-spacing="0.8">OPEN</text>
+  <text x="226" y="{u90+4:.1f}" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">{sign(lbl(up,'90'))}</text>
+  <text x="226" y="{u50+4:.1f}" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500">{sign(lbl(up,'50'))}</text>
+  <text x="226" y="{u25+4:.1f}" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">{sign(lbl(up,'25'))}</text>
+  <text x="226" y="{d25+4:.1f}" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">-{lbl(dn,'25')}</text>
+  <text x="226" y="{d50+4:.1f}" fill="#e8eaf0" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500">-{lbl(dn,'50')}</text>
+  <text x="226" y="{d90+4:.1f}" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="10.5">-{lbl(dn,'90')}</text>
+  <text x="104" y="{u90-11:.1f}" fill="#8b93a7" font-family="IBM Plex Sans, sans-serif" font-size="10" letter-spacing="1.1">HIGH REACHED</text>
+  <text x="104" y="{d90+19:.1f}" fill="#8b93a7" font-family="IBM Plex Sans, sans-serif" font-size="10" letter-spacing="1.1">LOW REACHED</text>
+  </g>
+</svg>"""
+
+
+def envelope_html(p: dict) -> str:
+    env = p.get("envelope")
+    if not env:
+        return ""
+    unit = "pts" if env["up"]["50"]["pts"] is not None else "× ATR"
+    def sz(v_pts, v_atr): return f'{v_pts} pts' if v_pts is not None else f'{v_atr:.2f}× ATR'
+    mods_stamp = " + ".join([p["label"]] + [m["name"] for m in p.get("modifiers", [])])
+
+    gap_row = ""
+    if env.get("gap"):
+        g = env["gap"]
+        gap_row = (f'<div class="read-item"><span class="read-label">The gap</span>'
+                   f'<span class="read-value">Today opened <span class="num">{g["atr"]:.2f} ATR</span> away '
+                   f'— {g["pct_1y"]}th percentile (trailing year). Gaps like this closed back to the prior '
+                   f'session <span class="num">{g["fill_pct"]}%</span> of the time.</span></div>')
+
+    size_pct = (env["size_today_pts"]/env["size_all_pts"] - 1)*100 if env["size_today_pts"] else \
+               (env["size_today_atr"]/env["size_all_atr"] - 1)*100
+    size_word = "smaller" if size_pct < 0 else "bigger"
+
+    slider_html = ""
+    if env.get("slider"):
+        default_i = len(env["slider"]["pts"]) // 4
+        slider_html = f"""<div class="odds">
+      <div class="odds-head"><h3>Does today clear your bar?</h3><span>Set the range your setup needs to work.</span></div>
+      <div class="slider-row"><label for="needpts">Minimum session range</label>
+        <input type="range" id="needpts" min="0" max="{len(env['slider']['pts'])-1}" step="1" value="{default_i}">
+        <span class="pts" id="ptsout">{env['slider']['pts'][default_i]} pts</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-name is-today">Days like today</span>
+          <span class="track"><span class="fill is-today" id="fillA"></span></span><span class="bar-pct" id="pctA"></span></div>
+        <div class="bar-row"><span class="bar-name">All days</span>
+          <span class="track"><span class="fill" id="fillB"></span></span><span class="bar-pct" id="pctB"></span></div>
+      </div>
+      <p class="verdict" id="verdict"></p>
+    </div>
+    <script>
+    (function(){{
+      var PTS={env['slider']['pts']}, TODAY={env['slider']['today']}, ALL={env['slider']['all']};
+      var slider=document.getElementById('needpts'), ptsout=document.getElementById('ptsout'),
+          fillA=document.getElementById('fillA'), fillB=document.getElementById('fillB'),
+          pctA=document.getElementById('pctA'), pctB=document.getElementById('pctB'), verdict=document.getElementById('verdict');
+      function render(){{
+        var i=Number(slider.value), pts=PTS[i], a=TODAY[i], b=ALL[i];
+        ptsout.textContent=pts+' pts'; fillA.style.width=a+'%'; fillB.style.width=b+'%';
+        pctA.textContent=a+'%'; pctB.textContent=b+'%';
+        var diff=a-b, shape = diff<=-7 ? 'Meaningfully worse odds than a normal session.'
+                    : diff>=7 ? 'Better odds than a normal session.' : 'About the same odds as a normal session.';
+        verdict.innerHTML='<b>'+a+'% of days like this</b> gave at least '+pts+' points of range, against '+b+'% of all days. '+shape+' What that\\u2019s worth is your call.';
+      }}
+      slider.addEventListener('input', render); render();
+    }})();
+    </script>"""
+
+    return f"""<div class="card">
+    <div class="section-head"><h2 style="font-size:16px;margin:0;font-weight:600">Range envelope</h2>
+      <span class="stamp">{mods_stamp} · n={env['n']:,}</span></div>
+    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the {env['n']:,} past sessions that looked like this one. Range only — never direction.</p>
+    <div class="split">
+      <div>{envelope_svg(env)}
+        <p class="cap">Solid line = median · shaded = middle 50% · outer = 10th-90th{' · points at NDX level' if unit=='pts' else ''}</p>
+      </div>
+      <div class="read">
+        <div class="read-item"><span class="read-label">Size of day</span>
+          <span class="read-value"><span class="num">{sz(env['size_today_pts'], env['size_today_atr'])}</span> typical, vs
+          <span class="num">{sz(env['size_all_pts'], env['size_all_atr'])}</span> on all days — about
+          <b>{abs(size_pct):.0f}% {size_word}</b>.</span></div>
+        <div class="read-item"><span class="read-label">Direction</span>
+          <span class="read-value null-result">No edge. Days like this closed above the open <span class="num">{env['close_up_pct']:.0f}%</span>
+          of the time <span class="ci">[{env['close_up_lo']:.0f}-{env['close_up_hi']:.0f}%]</span> — a coin flip, and the page won't pretend otherwise.</span></div>
+        <div class="read-item"><span class="read-label">Big-range odds</span>
+          <span class="read-value">Only <span class="num">{env['big_range_today']}%</span> ran &ge;1.3&times; ATR, against <span class="num">{env['big_range_all']}%</span> normally.</span></div>
+        {gap_row}
+      </div>
+    </div>
+    {slider_html}
+  </div>"""
 
 
 def render(p: dict) -> str:
@@ -199,6 +380,31 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 .modcopy{{font-size:13px;color:var(--muted);margin-top:2px}}
 .modline{{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}}
 .stale{{display:none;background:#3a1d1d;border:1px solid #7a2e2e;color:#ffb4b4;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-weight:600}}
+.section-head{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}}
+.stamp{{font-family:var(--mono,ui-monospace);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}}
+.split{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:14px}}
+@media (max-width:640px){{.split{{grid-template-columns:1fr;gap:18px}}}}
+.split svg{{display:block;width:100%;max-width:100%;height:auto}}
+.cap{{font-size:11.5px;color:var(--muted);text-align:center;margin:6px 0 0}}
+.read{{display:flex;flex-direction:column;gap:14px}}
+.read-item{{display:flex;flex-direction:column;gap:2px}}
+.read-label{{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}}
+.read-value{{font-size:14.5px}} .read-value.null-result{{color:var(--muted)}}
+.odds{{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}}
+.odds-head{{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}}
+.odds-head h3{{font-size:13px;margin:0;font-weight:600}} .odds-head span{{font-size:12px;color:var(--muted)}}
+.slider-row{{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}}
+.slider-row label{{font-size:13px;color:var(--muted);flex:1 1 auto;min-width:170px}}
+input[type=range]{{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22px;cursor:pointer}}
+.pts{{font-family:var(--mono,ui-monospace);font-weight:600;color:var(--acc);font-size:15px;min-width:74px;text-align:right}}
+.bars{{display:flex;flex-direction:column;gap:9px}}
+.bar-row{{display:grid;grid-template-columns:118px minmax(0,1fr) 46px;gap:10px;align-items:center}}
+.bar-name{{font-size:12.5px;color:var(--muted)}} .bar-name.is-today{{color:var(--fg);font-weight:500}}
+.track{{display:block;background:#1d212a;border-radius:3px;height:9px;overflow:hidden}}
+.fill{{display:block;height:100%;background:#2a7c76;border-radius:3px;transition:width .12s ease-out;width:0}}
+.fill.is-today{{background:var(--acc)}}
+.bar-pct{{font-family:var(--mono,ui-monospace);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}}
+.verdict{{margin-top:14px;font-size:13.5px;color:var(--muted)}} .verdict b{{color:var(--fg);font-weight:600}}
 </style></head><body>
 <div id="stale" class="stale"></div>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts. Data: {p["data_source"]}</div>
@@ -221,6 +427,7 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
 {"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}</div>
+{envelope_html(p)}
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 {"".join(fmt(r) for r in p["base_rates"])}</table>
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>
