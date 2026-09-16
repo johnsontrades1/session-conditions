@@ -51,7 +51,10 @@ FOMC = """
 2024-01-31 2024-03-20 2024-05-01 2024-06-12 2024-07-31 2024-09-18 2024-11-07 2024-12-18
 2025-01-29 2025-03-19 2025-05-07 2025-06-18 2025-07-30 2025-09-17 2025-10-29 2025-12-10
 2026-01-28 2026-03-18 2026-04-29 2026-06-17 2026-07-29 2026-09-16 2026-10-28 2026-12-09
+2027-01-27 2027-03-17 2027-04-28 2027-06-09 2027-07-28 2027-09-15 2027-10-27 2027-12-08
 """.split()
+# 2027 from federalreserve.gov/monetarypolicy/fomccalendars.htm (fetched
+# 2026-09-16); the Fed notes each date is tentative until the preceding meeting.
 
 # CPI release days (BLS, 8:30 ET). 1999-2021 backfilled 2026-09-15 from the BLS
 # archived-news-release index (bls.gov/bls/news-release/cpi.htm — filenames
@@ -87,8 +90,14 @@ CPI = """
 2022-01-12 2022-02-10 2022-03-10 2022-04-12 2022-05-11 2022-06-10 2022-07-13 2022-08-10 2022-09-13 2022-10-13 2022-11-10 2022-12-13
 2023-01-12 2023-02-14 2023-03-14 2023-04-12 2023-05-10 2023-06-13 2023-07-12 2023-08-10 2023-09-13 2023-10-12 2023-11-14 2023-12-12
 2024-01-11 2024-02-13 2024-03-12 2024-04-10 2024-05-15 2024-06-12 2024-07-11 2024-08-14 2024-09-11 2024-10-10 2024-11-13 2024-12-11
-2025-01-15 2025-02-12 2025-03-12 2025-04-10 2025-05-13 2025-06-11 2025-07-15 2025-08-12 2025-09-11
+2025-01-15 2025-02-12 2025-03-12 2025-04-10 2025-05-13 2025-06-11 2025-07-15 2025-08-12 2025-09-11 2025-10-24 2025-12-18
+2026-01-13 2026-02-13 2026-03-11 2026-04-10 2026-05-12 2026-06-10 2026-07-14 2026-08-12 2026-09-11 2026-10-14 2026-11-10 2026-12-10
 """.split()
+# 2025-10-24 was the shutdown-delayed Sept 2025 release; the October 2025 CPI was
+# never published ("2025 lapse in federal government appropriations" — BLS archive),
+# so there is genuinely no November 2025 release date. 2026 dates from
+# bls.gov/schedule/news_release/cpi.htm (fetched 2026-09-16); BLS had not yet
+# published a 2027 schedule — test_calendar_freshness will flag when it's time.
 
 US_HOLIDAYS_FIRST_FRIDAY_SHIFT = {  # NFP moved when first Friday is a holiday
     "2015-07-03": "2015-07-02", "2020-07-03": "2020-07-02", "2026-07-03": "2026-07-02",

@@ -130,11 +130,11 @@
     },
     {
       "date": "2026-09-18",
-      "event": "QUAD_WITCH"
+      "event": "OPEX"
     },
     {
       "date": "2026-09-18",
-      "event": "OPEX"
+      "event": "QUAD_WITCH"
     }
   ],
   "label_counts": {
@@ -146,7 +146,7 @@
   },
   "modifier_counts": {
     "BIG_GAP": 793,
-    "EVENT": 1047
+    "EVENT": 1058
   },
   "modifiers": [
     {

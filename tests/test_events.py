@@ -74,3 +74,22 @@ class TestCalendarCoverage:
     def test_shutdown_delayed_cpi_present(self):
         from events import CPI
         assert "2013-10-30" in CPI
+
+
+class TestCalendarFreshness:
+    """Fails when the hardcoded calendars near their end — the reminder to
+    refresh from bls.gov / federalreserve.gov before EVENT silently under-flags."""
+
+    def test_cpi_calendar_extends_60_days_out(self):
+        import datetime as dt
+        from events import CPI
+        last = max(dt.date.fromisoformat(d) for d in CPI)
+        assert last >= dt.date.today() + dt.timedelta(days=60), (
+            f"CPI calendar ends {last} — refresh from bls.gov/schedule/news_release/cpi.htm")
+
+    def test_fomc_calendar_extends_60_days_out(self):
+        import datetime as dt
+        from events import FOMC
+        last = max(dt.date.fromisoformat(d) for d in FOMC)
+        assert last >= dt.date.today() + dt.timedelta(days=60), (
+            f"FOMC calendar ends {last} — refresh from federalreserve.gov/monetarypolicy/fomccalendars.htm")
