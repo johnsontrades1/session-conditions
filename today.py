@@ -140,6 +140,28 @@ def main(prices_file: str):
             "all": [round(p_all[t] * 100, 1) for t in thresholds_atr],
         }
 
+    # Significance + materiality gating (quick-260915-v0k): the envelope's read
+    # lines were narrating non-significant differences as findings while the
+    # base-rate table correctly dims the same underlying stats as n.s. — same
+    # numbers, two honesty standards. Reuse the table's own sig flags here,
+    # and add a materiality floor on top: at n in the thousands a <5% relative
+    # gap can clear a 95% CI without meaning anything to a trader sizing a
+    # trade off it. MATERIALITY_FLOOR is a floor, not a second significance
+    # test — sig=True AND rel>=floor are both required.
+    MATERIALITY_FLOOR = 0.05
+    size_today_atr, size_all_atr = float(br.loc[lab, "out_range_atr"]), float(br.loc["ALL", "out_range_atr"])
+    big_range_raw, big_range_all_raw = float(br.loc[lab, "out_big_range"]), float(br.loc["ALL", "out_big_range"])
+    big_range_today, big_range_all = round(big_range_raw * 100), round(big_range_all_raw * 100)
+    size_sig = bool(br.loc[lab, "out_range_atr_sig"])
+    size_rel = abs(size_today_atr / size_all_atr - 1) if size_all_atr else 0
+    size_material = size_sig and size_rel >= MATERIALITY_FLOOR
+    big_sig = bool(br.loc[lab, "out_big_range_sig"])
+    # Relative diff computed on the RAW fraction, not the rounded display
+    # percentage — rounding both sides to whole points before dividing can
+    # over- or under-state the true relative gap for borderline cases.
+    big_rel = abs(big_range_raw / big_range_all_raw - 1) if big_range_all_raw else 0
+    big_material = big_sig and big_rel >= MATERIALITY_FLOOR
+
     envelope = {
         "n": int(br.loc[lab, "n"]),
         "up": {str(q): {"atr": round(v, 3), "pts": _cvt(v)} for q, v in up_p.items()},
@@ -147,14 +169,17 @@ def main(prices_file: str):
         "close_up_pct": round(float(br.loc[lab, "out_close_up"]) * 100, 1),
         "close_up_lo": round(float(br.loc[lab, "out_close_up_lo"]) * 100, 1),
         "close_up_hi": round(float(br.loc[lab, "out_close_up_hi"]) * 100, 1),
-        "big_range_today": round(float(br.loc[lab, "out_big_range"]) * 100),
-        "big_range_all": round(float(br.loc["ALL", "out_big_range"]) * 100),
-        "size_today_pts": _cvt(float(br.loc[lab, "out_range_atr"])),
-        "size_all_pts": _cvt(float(br.loc["ALL", "out_range_atr"])),
-        "size_today_atr": round(float(br.loc[lab, "out_range_atr"]), 2),
-        "size_all_atr": round(float(br.loc["ALL", "out_range_atr"]), 2),
+        "big_range_today": big_range_today,
+        "big_range_all": big_range_all,
+        "big_material": big_material,
+        "size_today_pts": _cvt(size_today_atr),
+        "size_all_pts": _cvt(size_all_atr),
+        "size_today_atr": round(size_today_atr, 2),
+        "size_all_atr": round(size_all_atr, 2),
+        "size_material": size_material,
         "size_p25_pts": _cvt(float(br.loc[lab, "out_range_atr_p25"])),
         "size_p75_pts": _cvt(float(br.loc[lab, "out_range_atr_p75"])),
+        "materiality_floor": MATERIALITY_FLOOR,
         "gap": gap_info,
         "slider": slider,
     }
@@ -273,6 +298,33 @@ def envelope_html(p: dict) -> str:
                (env["size_today_atr"]/env["size_all_atr"] - 1)*100
     size_word = "smaller" if size_pct < 0 else "bigger"
 
+    # Significance + materiality gating (quick-260915-v0k): the table dims
+    # out_range_atr/out_big_range as n.s. for this label — the envelope must
+    # apply the identical standard, not narrate the same non-difference as a
+    # finding. size_material/big_material come from main() using the table's
+    # own sig fields plus a 5% relative floor.
+    if not env["size_material"] and not env["big_material"]:
+        size_row = ('<div class="read-item"><span class="read-label">Size &amp; range odds</span>'
+                    '<span class="read-value null-result">Nothing about today\'s setup separates it from '
+                    'a typical session.</span></div>')
+        big_row = ""
+    else:
+        if env["size_material"]:
+            size_row = (f'<div class="read-item"><span class="read-label">Size of day</span>'
+                        f'<span class="read-value"><span class="num">{sz(env["size_today_pts"], env["size_today_atr"])}</span> typical, vs '
+                        f'<span class="num">{sz(env["size_all_pts"], env["size_all_atr"])}</span> on all days — about '
+                        f'<b>{abs(size_pct):.0f}% {size_word}</b>.</span></div>')
+        else:
+            size_row = ('<div class="read-item"><span class="read-label">Size of day</span>'
+                        '<span class="read-value null-result">No different from a normal session.</span></div>')
+        if env["big_material"]:
+            big_row = (f'<div class="read-item"><span class="read-label">Big-range odds</span>'
+                       f'<span class="read-value">Only <span class="num">{env["big_range_today"]}%</span> ran &ge;1.3&times; ATR, '
+                       f'against <span class="num">{env["big_range_all"]}%</span> normally.</span></div>')
+        else:
+            big_row = ('<div class="read-item"><span class="read-label">Big-range odds</span>'
+                       '<span class="read-value null-result">No different from a normal session.</span></div>')
+
     slider_html = ""
     if env.get("slider"):
         default_i = len(env["slider"]["pts"]) // 4
@@ -310,21 +362,17 @@ def envelope_html(p: dict) -> str:
     return f"""<div class="card">
     <div class="section-head"><h2 style="font-size:16px;margin:0;font-weight:600">Range envelope</h2>
       <span class="stamp">{mods_stamp} · n={env['n']:,}</span></div>
-    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the {env['n']:,} past sessions that looked like this one. Range only — never direction.</p>
+    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the {env['n']:,} past sessions that looked like this one. Range only — never direction. Differences under {env['materiality_floor']*100:.0f}% are called "no different," even when the CI clears — a materiality floor on top of the significance test, because at n={env['n']:,} a small gap can pass a CI check without meaning anything to a trader.</p>
     <div class="split">
       <div>{envelope_svg(env)}
         <p class="cap">Solid line = median · shaded = middle 50% · outer = 10th-90th{' · points at NDX level' if unit=='pts' else ''}</p>
       </div>
       <div class="read">
-        <div class="read-item"><span class="read-label">Size of day</span>
-          <span class="read-value"><span class="num">{sz(env['size_today_pts'], env['size_today_atr'])}</span> typical, vs
-          <span class="num">{sz(env['size_all_pts'], env['size_all_atr'])}</span> on all days — about
-          <b>{abs(size_pct):.0f}% {size_word}</b>.</span></div>
+        {size_row}
         <div class="read-item"><span class="read-label">Direction</span>
           <span class="read-value null-result">No edge. Days like this closed above the open <span class="num">{env['close_up_pct']:.0f}%</span>
           of the time <span class="ci">[{env['close_up_lo']:.0f}-{env['close_up_hi']:.0f}%]</span> — a coin flip, and the page won't pretend otherwise.</span></div>
-        <div class="read-item"><span class="read-label">Big-range odds</span>
-          <span class="read-value">Only <span class="num">{env['big_range_today']}%</span> ran &ge;1.3&times; ATR, against <span class="num">{env['big_range_all']}%</span> normally.</span></div>
+        {big_row}
         {gap_row}
       </div>
     </div>

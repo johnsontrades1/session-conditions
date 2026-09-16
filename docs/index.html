@@ -66,7 +66,7 @@ input[type=range]{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22px
 <div class="card">
     <div class="section-head"><h2 style="font-size:16px;margin:0;font-weight:600">Range envelope</h2>
       <span class="stamp">NEUTRAL + EVENT · n=2,977</span></div>
-    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the 2,977 past sessions that looked like this one. Range only — never direction.</p>
+    <p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 18px">Excursion from the open on the 2,977 past sessions that looked like this one. Range only — never direction. Differences under 5% are called "no different," even when the CI clears — a materiality floor on top of the significance test, because at n=2,977 a small gap can pass a CI check without meaning anything to a trader.</p>
     <div class="split">
       <div><svg viewBox="0 0 340 280" role="img" aria-label="Range envelope: 2977 days like this reached a median of +122 above the open and 124 below, middle 50% spanning 60-211 up and 59-228 down.">
   <g transform="translate(0,-33)">
@@ -94,15 +94,11 @@ input[type=range]{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22px
         <p class="cap">Solid line = median · shaded = middle 50% · outer = 10th-90th · points at NDX level</p>
       </div>
       <div class="read">
-        <div class="read-item"><span class="read-label">Size of day</span>
-          <span class="read-value"><span class="num">309 pts</span> typical, vs
-          <span class="num">311 pts</span> on all days — about
-          <b>1% smaller</b>.</span></div>
+        <div class="read-item"><span class="read-label">Size of day</span><span class="read-value null-result">No different from a normal session.</span></div>
         <div class="read-item"><span class="read-label">Direction</span>
           <span class="read-value null-result">No edge. Days like this closed above the open <span class="num">52%</span>
           of the time <span class="ci">[50-54%]</span> — a coin flip, and the page won't pretend otherwise.</span></div>
-        <div class="read-item"><span class="read-label">Big-range odds</span>
-          <span class="read-value">Only <span class="num">14%</span> ran &ge;1.3&times; ATR, against <span class="num">15%</span> normally.</span></div>
+        <div class="read-item"><span class="read-label">Big-range odds</span><span class="read-value">Only <span class="num">14%</span> ran &ge;1.3&times; ATR, against <span class="num">15%</span> normally.</span></div>
         
       </div>
     </div>

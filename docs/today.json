@@ -223,12 +223,15 @@
     "close_up_hi": 53.9,
     "big_range_today": 14,
     "big_range_all": 15,
+    "big_material": true,
     "size_today_pts": 309,
     "size_all_pts": 311,
     "size_today_atr": 0.93,
     "size_all_atr": 0.93,
+    "size_material": false,
     "size_p25_pts": 220,
     "size_p75_pts": 369,
+    "materiality_floor": 0.05,
     "gap": null,
     "slider": {
       "pts": [

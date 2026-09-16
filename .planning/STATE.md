@@ -78,3 +78,11 @@ claim corrections, STATE sync. Page relabeled 2026-09-14 EVENT→COILED.
 - First unattended LaunchAgent fire: next weekday 7:40 AM CT — verify page date + log
 - v2 candidates: FOMC/CPI calendar backfill (federalreserve.gov, bls.gov) to make
   EVENT provable; Event Playbook; NQ Databento pull
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260915-v0k | range-envelope significance gating | 2026-09-16 | (pending) | [260915-v0k-range-envelope-significance-gating](./quick/260915-v0k-range-envelope-significance-gating/) |
+
+Last activity: 2026-09-16 - Completed quick task 260915-v0k: range-envelope significance gating
