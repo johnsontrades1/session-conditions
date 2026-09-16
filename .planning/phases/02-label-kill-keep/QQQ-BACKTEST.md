@@ -112,6 +112,48 @@ DESCR strings that contradicted or overclaimed the evidence, rewritten (2 passes
   to EVENT (e.g., COILED n 1065→962). Other labels' effects unchanged in direction and
   significance after the reclassification.
 
+## Tested and rejected: directional edge on STRETCHED (2026-09-16)
+
+Building the Range Envelope section required a null-check on `out_close_up`
+(P(close > open)) across every primary label and modifier — a mandatory
+pre-flight before publishing a "direction is a coin flip" claim on the page.
+Seven of eight conditions came back flat. STRETCHED did not.
+
+- **The number:** STRETCHED close-up 55.8%, CI [52.6%, 58.9%], vs 52.4%
+  baseline — clears the CI-excludes-baseline rule by 0.2pp on the lower bound.
+- **Decay:** first-half 57.0% (sig, CI [52.2%, 61.8%]) → second-half 54.9% (not
+  sig, CI [50.7%, 58.8%] straddles baseline). Deviation from baseline
+  +6.0pp → +1.1pp, a >80% decay. No sign flip, so it technically survives the
+  project's literal stability rule while plainly failing its spirit — a rule
+  written to catch flips, not decay, and this is the gap in it.
+- **Multiple comparisons:** 7 conditions were tested against this one outcome
+  (5 primary labels: COILED/EXPANDED/HIGH_VOL/NEUTRAL/STRETCHED + 2 modifiers:
+  BIG_GAP/EVENT; ALL is the baseline reference, not itself a tested condition).
+  At a 95% CI, roughly 1 in 20 true nulls reads significant by chance; testing
+  7 and finding exactly 1 marginal hit is in line with the expected
+  false-positive yield, not a finding. This is the primary reason for the
+  null call, not the decay alone.
+- **Baseline contamination:** the unconditional baseline is already 52.4%
+  (broad equity upward drift over 1999-2026, not zero as a naive prior would
+  assume), and ~90% of STRETCHED days are prior uptrends by construction
+  (trend_20_atr > 0). The label may just be re-measuring the same drift the
+  baseline already contains, not finding something on top of it.
+- **Economic size:** 3.4pp of edge on a coin-flip outcome is not tradeable
+  before slippage/commissions, and P(close > open) says nothing about the path
+  a trade would have to survive to get there — a day can close up 55.8% of the
+  time and still stop out most of those days first.
+
+**Verdict: NULL.** No directional claim anywhere on the page from this result.
+The Range Envelope section (below) keeps its coin-flip copy exactly as
+designed — both excursion halves the same color, the direction row published
+as a null result on purpose.
+
+**v2 candidate:** the honest way to settle this is out-of-sample, not more
+looks at the same data — hold out 2020+ and test whether the pre-2020-fit
+effect predicts it, or run the identical STRETCHED rule on SPY/IWM as
+independent instruments. Not attempted now; recorded so a future session
+doesn't have to re-discover this near-miss from scratch.
+
 ## Requirement mapping
 
 - LABEL-01 ✓ full re-score with CI + stability on RTH data (this report)

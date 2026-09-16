@@ -101,6 +101,9 @@ def build(prices: pd.DataFrame, vix: pd.DataFrame | None = None) -> pd.DataFrame
     o["out_small_range"] = (o.out_range_atr <= 0.7).astype(int)
     o["out_next_ret"] = p.close.shift(-1) / p.close - 1       # for pullback base rates
     o["out_next5_ret"] = p.close.shift(-5) / p.close - 1
+    o["out_up_exc"] = (p.high - p.open) / f.atr20              # reach above the open
+    o["out_dn_exc"] = (p.open - p.low) / f.atr20               # reach below the open
+    o["out_close_up"] = (p.close > p.open).astype(int)         # the direction null
     return f.join(o).dropna(subset=["atr20"])
 
 

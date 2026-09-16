@@ -88,15 +88,28 @@ def base_rates(df: pd.DataFrame, labels: pd.Series, outcomes=OUTCOMES) -> pd.Dat
             m = np.nanmean(x)
             r[oc] = m
             r[oc + "_lo"], r[oc + "_hi"] = lo, hi
-            # IQR = actual spread of outcomes (what a trader sizes against);
-            # the bootstrap CI above is only uncertainty about the mean.
+            # Percentiles = actual spread of outcomes (what a trader sizes
+            # against); the bootstrap CI above is only uncertainty about the
+            # mean. p10/p90 give the outer reach for envelope-style displays;
+            # p25/p50/p75 are the IQR + median already used elsewhere.
             if len(x) >= 5:
-                r[oc + "_p25"], r[oc + "_p75"] = np.nanquantile(x, [0.25, 0.75])
+                p10, p25, p50, p75, p90 = np.nanquantile(x, [0.10, 0.25, 0.50, 0.75, 0.90])
             else:
-                r[oc + "_p25"] = r[oc + "_p75"] = np.nan
+                p10 = p25 = p50 = p75 = p90 = np.nan
+            r[oc + "_p10"], r[oc + "_p25"], r[oc + "_p50"] = p10, p25, p50
+            r[oc + "_p75"], r[oc + "_p90"] = p75, p90
             r[oc + "_sig"] = bool(lab != "ALL" and (hi < base[oc] or lo > base[oc]))
         rows.append(r)
     return pd.DataFrame(rows).set_index("label")
+
+
+def prob_at_least(x: np.ndarray, thresholds) -> dict:
+    """Empirical P(outcome >= t) for each threshold — the real frequency, not
+    a fitted curve. Feeds sliders like 'does today clear my bar'."""
+    x = x[~np.isnan(x)]
+    if len(x) == 0:
+        return {t: np.nan for t in thresholds}
+    return {t: float((x >= t).mean()) for t in thresholds}
 
 
 def feature_quintiles(df: pd.DataFrame, feature: str, outcome: str, q=5) -> pd.DataFrame:
@@ -130,7 +143,7 @@ if __name__ == "__main__":
     pd.set_option("display.width", 200)
     print(lab.value_counts())
     br = base_rates(df, lab)
-    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi", "_p25", "_p75"))]
+    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi", "_p10", "_p25", "_p50", "_p75", "_p90"))]
     print(br[cols].round(3).to_string())
     print("\nStability (deviation from baseline, out_range_atr):")
     print(stability(df, lab, "out_range_atr").round(3))

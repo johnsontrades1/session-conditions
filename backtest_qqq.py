@@ -19,7 +19,7 @@ from regime import P, label, modifiers, modifier_rates, base_rates, stability, O
 def report(df, lab, outcomes=OUTCOMES):
     print(lab.value_counts().to_string())
     br = base_rates(df, lab, outcomes)
-    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi", "_p25", "_p75"))]
+    cols = [c for c in br.columns if not c.endswith(("_lo", "_hi", "_p10", "_p25", "_p50", "_p75", "_p90"))]
     print("\n" + br[cols].round(3).to_string())
     for oc in ("out_range_atr", "out_eff", "out_gap_filled"):
         print(f"\nStability ({oc}, deviation from baseline):")
@@ -103,7 +103,7 @@ def main():
     cols = None
     for m in mods.columns:
         mr = modifier_rates(df, mods[m], m)
-        cols = [c for c in mr.columns if not c.endswith(("_lo", "_hi", "_p25", "_p75"))]
+        cols = [c for c in mr.columns if not c.endswith(("_lo", "_hi", "_p10", "_p25", "_p50", "_p75", "_p90"))]
         print(f"\n=== modifier {m} (independent of primary) ===")
         print(mr[cols].round(3).to_string())
         ml = pd.Series("other", index=df.index)
