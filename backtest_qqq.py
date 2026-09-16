@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from features import build, load_prices, load_vix
-from regime import P, label, base_rates, stability, OUTCOMES
+from regime import P, label, modifiers, modifier_rates, base_rates, stability, OUTCOMES
 
 
 def report(df, lab, outcomes=OUTCOMES):
@@ -96,19 +96,24 @@ def main():
     pd.set_option("display.width", 250)
     report(df, lab)
 
-    # EVENT calendar was backfilled to 1999 on 2026-09-15 (FOMC from
-    # federalreserve.gov, CPI from BLS archives), so the full-sample EVENT rows
-    # above are now valid. Guard kept in case the price sample ever extends
-    # before FULL_COVERAGE_START again.
-    from events import FULL_COVERAGE_START
-    if df.index[0] < pd.Timestamp(FULL_COVERAGE_START):
-        cut = df.index >= FULL_COVERAGE_START
-        print(f"\n=== EVENT re-score, {FULL_COVERAGE_START[:4]}+ only (full calendar coverage) ===")
-        brf = base_rates(df[cut], label(df[cut]))
-        cols = [c for c in brf.columns if not c.endswith(("_lo", "_hi"))]
-        print(brf.loc[["ALL", "EVENT"], cols].round(3).to_string())
-    print("EVENT verdict: KEEP (2026-09-15, full 1999+ calendar) — modest but real: "
+    # Modifiers (taxonomy split 2026-09-15): BIG_GAP and EVENT are independent
+    # booleans scored on their own vs the unconditional baseline. EVENT calendar
+    # is complete from 1999 (FOMC federalreserve.gov, CPI BLS archives).
+    mods = modifiers(df)
+    cols = None
+    for m in mods.columns:
+        mr = modifier_rates(df, mods[m], m)
+        cols = [c for c in mr.columns if not c.endswith(("_lo", "_hi"))]
+        print(f"\n=== modifier {m} (independent of primary) ===")
+        print(mr[cols].round(3).to_string())
+        ml = pd.Series("other", index=df.index)
+        ml[mods[m]] = m
+        st = stability(df, ml, "out_range_atr").loc[m]
+        print(f"stability (out_range_atr): {st.first_half:+.3f} / {st.second_half:+.3f}")
+    print("\nEVENT verdict: KEEP (2026-09-15, full 1999+ calendar) — modest but real: "
           "range CI excludes baseline, big/small-range sig, no stability flips, n=1047.")
+    print("BIG_GAP (as modifier, n=793): range 1.142 sig, fill 27.4% vs 67.4% sig, "
+          "no stability flips — passes independently.")
 
     if args.gaps:
         print("\n=== gap-fill by band vs mechanical distance null ===")
@@ -120,7 +125,8 @@ def main():
             "expand": [0.96, 1.08, 1.20, 1.32, 1.44],
             "trend_atr": [2.4, 2.7, 3.0, 3.3, 3.6],
             "er": [0.36, 0.40, 0.45, 0.50, 0.54],
-            "gap_big": [0.48, 0.54, 0.6, 0.66, 0.72],
+            # gap_big removed: BIG_GAP is a modifier since the taxonomy split —
+            # it no longer affects the primary chain that sweep() re-labels.
             "vix_hi": [0.68, 0.77, 0.85, 0.94],
         }
         for knob, vals in grids.items():

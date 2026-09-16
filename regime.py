@@ -24,13 +24,18 @@ P = dict(
 
 
 def label(f: pd.DataFrame, p: dict = P) -> pd.Series:
-    """Pre-open regime label. Order matters: first match wins."""
+    """Primary regime (mutually exclusive). Order matters: first match wins.
+
+    2026-09-15 taxonomy split: EVENT and BIG_GAP are no longer in this chain —
+    they are independent modifiers (see modifiers()). The old priority chain hid
+    real conditions: a 98th-percentile gap vanished because COILED won priority
+    and BIG_GAP only claimed otherwise-NEUTRAL days.
+    """
     lab = pd.Series("NEUTRAL", index=f.index)
     stress = (f.get("vix_term", pd.Series(0, index=f.index)) > p["vix_stress"]) | (f.get("vix_rank_1y", pd.Series(0, index=f.index)) > p["vix_hi"])
     trending = (f.trend_20_atr.abs() >= p["trend_atr"]) & (f.er_10 >= p["er"])
     coiled = f.range_5_20 <= p["compress"]
     expanded = f.range_5_20 >= p["expand"]
-    big_gap = f.gap_atr >= p["gap_big"]
 
     lab[stress] = "HIGH_VOL"
     # STRETCHED (né TREND): ≥3 ATR of 20d movement on a clean tape. Both the NQ
@@ -39,9 +44,25 @@ def label(f: pd.DataFrame, p: dict = P) -> pd.Series:
     lab[~stress & trending] = "STRETCHED"
     lab[~stress & ~trending & coiled] = "COILED"
     lab[~stress & ~trending & expanded] = "EXPANDED"
-    lab[f.event_day | f.pre_fomc] = "EVENT"      # overrides all
-    lab[big_gap & (lab == "NEUTRAL")] = "BIG_GAP"
     return lab
+
+
+def modifiers(f: pd.DataFrame, p: dict = P) -> pd.DataFrame:
+    """Independent boolean modifiers — may co-occur with any primary regime.
+    Each is scored on its own against the unconditional baseline; no
+    intersection stats (n goes thin fast — deliberately out of scope)."""
+    return pd.DataFrame({
+        "BIG_GAP": f.gap_atr >= p["gap_big"],
+        "EVENT": (f.event_day | f.pre_fomc).astype(bool),
+    }, index=f.index)
+
+
+def modifier_rates(df: pd.DataFrame, mask: pd.Series, name: str, outcomes=OUTCOMES) -> pd.DataFrame:
+    """base_rates() for one boolean condition: rows ALL + <name> (mask==True)."""
+    lab = pd.Series("other", index=df.index)
+    lab[mask] = name
+    br = base_rates(df, lab, outcomes)
+    return br.loc[["ALL", name]]
 
 
 def bootstrap_ci(x: np.ndarray, n=2000, q=(0.025, 0.975), seed=0):
@@ -99,6 +120,7 @@ if __name__ == "__main__":
     from features import build, load_prices, load_vix
     df = build(load_prices(), load_vix())
     lab = label(df)
+    mods = modifiers(df)
     pd.set_option("display.width", 200)
     print(lab.value_counts())
     br = base_rates(df, lab)
@@ -106,3 +128,10 @@ if __name__ == "__main__":
     print(br[cols].round(3).to_string())
     print("\nStability (deviation from baseline, out_range_atr):")
     print(stability(df, lab, "out_range_atr").round(3))
+    for m in mods.columns:
+        mr = modifier_rates(df, mods[m], m)
+        print(f"\nModifier {m} (n={int(mr.loc[m,'n'])}, independent of primary):")
+        print(mr[cols].round(3).to_string())
+        ml = pd.Series("other", index=df.index)
+        ml[mods[m]] = m
+        print(stability(df, ml, "out_range_atr").round(3).loc[[m]].to_string())

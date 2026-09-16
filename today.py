@@ -13,20 +13,22 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from features import build, load_prices, load_vix, resolve_price_source
-from regime import label, base_rates, OUTCOMES
+from regime import label, modifiers, modifier_rates, base_rates, OUTCOMES
 from events import build_calendar, FULL_COVERAGE_START
 
 SITE = Path(__file__).parent / "docs"
 SITE.mkdir(exist_ok=True)
 
-DESCR = {
+DESCR = {  # primary regimes (mutually exclusive)
     "STRETCHED": "20-day move is extended (≥3 ATR) on a clean tape. Historically these sessions run QUIETER — smaller ranges, fewer trend days. Extension exhausts more often than it continues.",
     "COILED":   "Recent ranges are compressed vs. the 20-day norm. Volatility clusters — quiet tape tends to stay quiet near-term, so small-range days are MORE likely, not less. The 'coiled spring' pop is not the base case.",
     "EXPANDED": "Ranges have already expanded well above the 20-day norm. Volatility clusters — big-range days tend to stay elevated near-term. Don't fade range size early.",
     "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common — size accordingly.",
-    "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common — a real but small effect (validated on the full 1999+ calendar).",
-    "BIG_GAP":  "Opening gap is large (≥0.6 ATR). Same-day fill rate is low (~27% vs ~67% all days) — this is arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider; check the table.",
-    "NEUTRAL":  "Nothing in the pre-open data stands out. Treat base rates as unconditional.",
+    "NEUTRAL":  "Nothing in the pre-open regime data stands out. Treat base rates as unconditional.",
+}
+MOD_DESCR = {  # independent modifiers — may co-occur with any primary regime
+    "BIG_GAP": "Opening gap is large (≥0.6 ATR). Same-day fill rate is low — arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider.",
+    "EVENT":   "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common — real but small (validated on the full 1999+ calendar).",
 }
 FEATS = {
     "gap_atr": "Opening gap (ATR units)", "range_5_20": "5d/20d range ratio", "prev_range_atr": "Yesterday's range (ATR)",
@@ -48,22 +50,33 @@ def main(prices_file: str):
     _, data_source = resolve_price_source(prices_file)
     df = build(load_prices(prices_file), load_vix())
     labs = label(df)
+    mods = modifiers(df)
     today = df.index[-1]
     row, lab = df.iloc[-1], labs.iloc[-1]
-
-    # EVENT stats are only valid where the event calendar is complete. Since the
-    # 2026-09-15 backfill FULL_COVERAGE_START is 1999-01-01, which predates the
-    # sample, so this restriction is a no-op — it stays as a guard in case the
-    # price sample is ever extended before the calendar is.
-    stats_note = None
-    if lab == "EVENT" and df.index[0] < pd.Timestamp(FULL_COVERAGE_START):
-        cut = df.index >= FULL_COVERAGE_START
-        df_stats, labs_stats = df[cut], labs[cut]
-        stats_note = (f"EVENT stats restricted to {FULL_COVERAGE_START[:4]}+ — the span with "
-                      f"complete FOMC/CPI/NFP coverage.")
-    else:
-        df_stats, labs_stats = df, labs
+    df_stats, labs_stats = df, labs
     br = base_rates(df_stats, labs_stats)
+
+    # Active modifiers, each scored INDEPENDENTLY vs the unconditional baseline.
+    # No intersection stats — n goes thin, deliberately out of scope.
+    def pctf(x): return f"{x*100:.0f}%"
+    active_mods = []
+    for m in mods.columns:
+        if not bool(mods[m].iloc[-1]):
+            continue
+        # coverage guard (dormant: FULL_COVERAGE_START predates the sample)
+        d = df if not (m == "EVENT" and df.index[0] < pd.Timestamp(FULL_COVERAGE_START)) \
+            else df[df.index >= FULL_COVERAGE_START]
+        mm = mods[m].reindex(d.index)
+        mr = modifier_rates(d, mm, m)
+        if m == "BIG_GAP":
+            line = (f"{int(mr.loc[m,'n'])} days like this: P(gap filled) {pctf(mr.loc[m,'out_gap_filled'])} "
+                    f"vs {pctf(mr.loc['ALL','out_gap_filled'])} all days · range {mr.loc[m,'out_range_atr']:.2f}×ATR "
+                    f"vs {mr.loc['ALL','out_range_atr']:.2f}")
+        else:
+            line = (f"{int(mr.loc[m,'n'])} days like this: range {mr.loc[m,'out_range_atr']:.2f}×ATR "
+                    f"vs {mr.loc['ALL','out_range_atr']:.2f} · P(range ≤ 0.7 ATR) {pctf(mr.loc[m,'out_small_range'])} "
+                    f"vs {pctf(mr.loc['ALL','out_small_range'])}")
+        active_mods.append({"name": m, "description": MOD_DESCR[m], "line": line})
 
     feats = []
     for k, name in FEATS.items():
@@ -86,8 +99,9 @@ def main(prices_file: str):
         "n_days_like_this": int(br.loc[lab, "n"]), "n_all": int(br.loc["ALL", "n"]),
         "sample_start": str(df_stats.index[0].date()), "features": feats, "base_rates": rates, "events": events,
         "label_counts": labs.value_counts().to_dict(),
+        "modifier_counts": {m: int(mods[m].sum()) for m in mods.columns},
+        "modifiers": active_mods,
         "data_source": data_source,
-        "stats_note": stats_note,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
@@ -118,11 +132,15 @@ table{{width:100%;border-collapse:collapse}} td{{padding:7px 4px;border-top:1px 
 .num{{text-align:right;font-variant-numeric:tabular-nums}} .muted{{color:var(--muted)}} .ci{{color:var(--muted);font-size:12px}}
 tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;font-size:12px;padding:0 4px 6px}}
 .foot{{color:var(--muted);font-size:12px;margin-top:24px}} ul{{margin:0;padding-left:18px}}
+.mod{{border-left:3px solid var(--line);padding:8px 0 8px 12px;margin-top:14px}}
+.modname{{font-size:15px;font-weight:600;color:var(--fg)}}
+.modcopy{{font-size:13px;color:var(--muted);margin-top:2px}}
+.modline{{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}}
 </style></head><body>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts. Data: {p["data_source"]}</div>
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
-{f'<div class="muted" style="margin-top:6px;font-size:12px">⚠ {p["stats_note"]}</div>' if p.get("stats_note") else ""}</div>
+{"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}</div>
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 {"".join(fmt(r) for r in p["base_rates"])}</table>
 <div class="muted" style="font-size:12px;margin-top:8px">Rows dimmed as "n.s." are not statistically different from all days — don't trade them as if they were.</div></div>
