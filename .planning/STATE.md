@@ -84,6 +84,6 @@ claim corrections, STATE sync. Page relabeled 2026-09-14 EVENT→COILED.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260915-v0k | range-envelope significance gating | 2026-09-16 | 075391b | [260915-v0k-range-envelope-significance-gating](./quick/260915-v0k-range-envelope-significance-gating/) |
-| 260915-va7 | same-day pre-open read | 2026-09-16 | (pending) | [260915-va7-same-day-pre-open-read](./quick/260915-va7-same-day-pre-open-read/) |
+| 260915-va7 | same-day pre-open read | 2026-09-16 | 7dcc5aa | [260915-va7-same-day-pre-open-read](./quick/260915-va7-same-day-pre-open-read/) |
 
 Last activity: 2026-09-16 - Completed quick task 260915-va7: same-day pre-open read
