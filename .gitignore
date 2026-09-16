@@ -219,6 +219,7 @@ __marimo__/
 
 # project-specific
 data/*.csv
+data/intraday/
 .DS_Store
 .env
 logs/
