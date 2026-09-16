@@ -107,6 +107,58 @@ def build(prices: pd.DataFrame, vix: pd.DataFrame | None = None) -> pd.DataFrame
     return f.join(o).dropna(subset=["atr20"])
 
 
+# Columns safe to render before the next session's open exists — every one
+# already depends only on data through the prior completed close (see the
+# shift(1)/rolling chains in build() above). atr_pct isn't in the original
+# spec but is included: it's a pure display transform of atr20
+# (atr20/prev_close) that today.py's points/dollar conversion already needs,
+# and it's forward-safe by the identical argument as atr20 itself.
+FORWARD_FEATURES = [
+    "atr20", "atr_pct", "range_5_20", "prev_range_atr", "trend_20_atr",
+    "er_10", "pos_20d", "rv5_rv20", "vix", "vix_term", "vix_rank_1y",
+]
+
+
+def next_trading_date(index: pd.DatetimeIndex) -> pd.Timestamp:
+    """First weekday after the last completed session. Weekend-aware only —
+    matches this project's existing calendar precision (events.py's NFP/opex
+    generation has the same limitation); a market holiday will render a
+    forward row for a day the market is actually closed."""
+    d = index[-1] + pd.Timedelta(days=1)
+    while d.weekday() >= 5:
+        d += pd.Timedelta(days=1)
+    return d
+
+
+def build_forward(prices: pd.DataFrame, vix: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Pre-open feature row for the NEXT trading session — before that
+    session's open exists, so no gap/gap_atr/OHLC columns. This is what makes
+    the live page describe the session that's about to happen instead of the
+    one that already closed.
+
+    Implementation: append one row with NaN OHLC dated for the next session,
+    then run the same build() used for the historical backtest. Every
+    FORWARD_FEATURES column is computed via shift(1)/rolling windows that
+    never reference a row's own OHLC, so this produces correct values with
+    zero changes to the feature formulas — verified by hand-tracing the
+    dependency chain for atr20, the VIX block, and event_flags (pure calendar
+    lookup, works for any date, including a future one).
+
+    Does not touch or share state with the historical build() call used
+    elsewhere — the backtest path is completely unaffected by this function.
+    """
+    fwd_date = next_trading_date(prices.index)
+    phantom = pd.DataFrame(
+        {"open": [np.nan], "high": [np.nan], "low": [np.nan], "close": [np.nan]},
+        index=pd.DatetimeIndex([fwd_date], name=prices.index.name),
+    )
+    extended = pd.concat([prices, phantom])
+    full = build(extended, vix)
+    cols = [c for c in FORWARD_FEATURES if c in full.columns]
+    cols += [c for c in full.columns if c.startswith("ev_") or c in ("event_day", "pre_fomc")]
+    return full.loc[[fwd_date], cols]
+
+
 if __name__ == "__main__":
     df = build(load_prices(), load_vix())
     print(df.tail(3).T)

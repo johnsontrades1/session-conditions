@@ -26,7 +26,8 @@ fi
 
 if [ -n "$(git status --porcelain docs/)" ]; then
     git add docs/ >> "$LOG" 2>&1
-    git commit -m "chore: daily page $(date +%F)" -- docs/ >> "$LOG" 2>&1
+    AS_OF=$("$PY" -c "import json; print(json.load(open('docs/today.json'))['as_of'])" 2>/dev/null || date +%F)
+    git commit -m "chore: daily page $AS_OF" -- docs/ >> "$LOG" 2>&1
     if git push origin main >> "$LOG" 2>&1; then
         log "published docs/ for $(date +%F)"
     else

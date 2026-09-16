@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  OPTIONAL. Not loaded automatically (quick-260915-va7). Re-renders the page
+  at 9:31 ET with the real open (adds gap/BIG_GAP) once the pre-open forward
+  read from com.johnsontrades.session-conditions has already run at 7:40 CT.
+
+  Mac Mini system clock is Central Time, so 9:31 ET = 8:31 CT local.
+
+  Activate with:
+    launchctl load ~/Library/LaunchAgents/com.johnsontrades.session-conditions-postopen.plist
+  Deactivate with:
+    launchctl unload ~/Library/LaunchAgents/com.johnsontrades.session-conditions-postopen.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.johnsontrades.session-conditions-postopen</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/paytinjohnson/Projects/session-conditions/run_postopen.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>31</integer></dict>
+        <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>31</integer></dict>
+        <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>31</integer></dict>
+        <dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>31</integer></dict>
+        <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>31</integer></dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/Users/paytinjohnson/Projects/session-conditions/logs/launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/paytinjohnson/Projects/session-conditions/logs/launchd.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/paytinjohnson/Projects/session-conditions</string>
+</dict>
+</plist>

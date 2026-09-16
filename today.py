@@ -1,18 +1,26 @@
 """
 Produce today's Session Conditions readout: docs/today.json + docs/index.html.
 
-    python today.py                # uses data/qqq_daily.csv (Phase 2 validated source)
+    python today.py                # forward pre-open read for the NEXT session
+    python today.py --postopen     # optional 9:31 ET re-render: adds the real
+                                    # gap/BIG_GAP if the open is in the data yet
     python today.py --prices synthetic_daily.csv
 
-The page shows: today's regime label, why (feature values with 1y percentile),
-the base rates for days like this vs. all days (with CIs), and scheduled
-events. No forecasts anywhere.
+Renders a forward row dated for the next trading session, built from
+completed-session data only (quick-260915-va7) — the historical backtest
+(base rates, CIs, stability) is untouched and still comes from every real
+completed session. gap_atr/BIG_GAP are absent from the default render (not
+knowable pre-open) and only appear via --postopen once a real open exists.
+
+The page shows: the label for the next session, why (feature values with 1y
+percentile), the base rates for days like this vs. all days (with CIs), and
+scheduled events. No forecasts anywhere.
 """
 import argparse, json
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from features import build, load_prices, load_vix, resolve_price_source
+from features import build, build_forward, load_prices, load_vix, resolve_price_source
 from regime import label, modifiers, modifier_rates, base_rates, prob_at_least, OUTCOMES
 
 ENV_OUTCOMES = ["out_up_exc", "out_dn_exc", "out_close_up"]  # range-envelope section
@@ -58,28 +66,85 @@ def pct_rank(series: pd.Series, value: float, window=252) -> float:
     return float((s < value).mean()) if len(s) else np.nan
 
 
-def main(prices_file: str):
+def _try_live_gap(prices_file: str, df_fwd: pd.DataFrame):
+    """--postopen only. Reads the RAW price CSV directly (bypassing
+    load_prices()'s dropna, which drops a partial current-day row before its
+    close exists) looking for the forward date's own open. If found, computes
+    gap_atr from it and returns df_fwd with that column added; otherwise
+    returns None so the caller falls back to the pending-gap render. Never
+    raises — the open genuinely may not exist yet (weekend re-run, market
+    holiday, fetch hasn't happened)."""
+    name, _ = resolve_price_source(prices_file)
+    path = DATA / name
+    if not path.exists():
+        return None
+    try:
+        raw = pd.read_csv(path, parse_dates=["date"], index_col="date").sort_index()
+    except Exception:
+        return None
+    fwd_date = df_fwd.index[-1]
+    if fwd_date not in raw.index or "open" not in raw.columns:
+        return None
+    live_open = raw.loc[fwd_date, "open"]
+    if pd.isna(live_open):
+        return None
+    prior_closes = raw.loc[:fwd_date].iloc[:-1]["close"].dropna() if "close" in raw.columns else pd.Series(dtype=float)
+    if prior_closes.empty:
+        return None
+    prev_close = float(prior_closes.iloc[-1])
+    atr20 = float(df_fwd["atr20"].iloc[-1])
+    if not atr20:
+        return None
+    out = df_fwd.copy()
+    out["gap_atr"] = abs(float(live_open) - prev_close) / atr20
+    return out
+
+
+def main(prices_file: str, postopen: bool = False):
     _, data_source = resolve_price_source(prices_file)
-    df = build(load_prices(prices_file), load_vix())
+    # Historical backtest path — UNCHANGED. Every base rate, CI, and stability
+    # figure on the page comes from this, exactly as before. Nothing about the
+    # same-day-read fix touches this.
+    prices = load_prices(prices_file)
+    vix = load_vix()
+    df = build(prices, vix)
     labs = label(df)
-    mods = modifiers(df)
-    today = df.index[-1]
-    row, lab = df.iloc[-1], labs.iloc[-1]
+    mods_hist = modifiers(df)
     df_stats, labs_stats = df, labs
     br = base_rates(df_stats, labs_stats, outcomes=OUTCOMES + ENV_OUTCOMES)
+
+    # Live render row — a FORWARD pre-open row for the next session by default
+    # (quick-260915-va7), not df's last row (which is always the prior,
+    # already-closed session — that was the one-session-lag bug). gap_atr is
+    # structurally absent here; BIG_GAP is a post-open-only modifier.
+    df_fwd = build_forward(prices, vix)
+    lab_fwd = label(df_fwd).iloc[-1]
+    mods_fwd = modifiers(df_fwd)
+    gap_known = False
+
+    if postopen:
+        gap_row = _try_live_gap(prices_file, df_fwd)
+        if gap_row is not None:
+            df_fwd = gap_row
+            mods_fwd = modifiers(df_fwd)
+            gap_known = True
+
+    today = df_fwd.index[-1]
+    row, lab = df_fwd.iloc[-1], lab_fwd
 
     # Active modifiers, each scored INDEPENDENTLY vs the unconditional baseline.
     # No intersection stats — n goes thin, deliberately out of scope.
     def pctf(x): return f"{x*100:.0f}%"
     active_mods = []
-    for m in mods.columns:
-        if not bool(mods[m].iloc[-1]):
+    for m in mods_fwd.columns:
+        if not bool(mods_fwd[m].iloc[-1]):
             continue
         # coverage guard (dormant: FULL_COVERAGE_START predates the sample)
         d = df if not (m == "EVENT" and df.index[0] < pd.Timestamp(FULL_COVERAGE_START)) \
             else df[df.index >= FULL_COVERAGE_START]
-        mm = mods[m].reindex(d.index)
-        mr = modifier_rates(d, mm, m)
+        # Rate stats always come from the HISTORICAL mask (mods_hist) — only
+        # "is this modifier active today" comes from the forward row.
+        mr = modifier_rates(d, mods_hist[m].reindex(d.index), m)
         if m == "BIG_GAP":
             line = (f"{int(mr.loc[m,'n'])} days like this: P(gap filled) {pctf(mr.loc[m,'out_gap_filled'])} "
                     f"vs {pctf(mr.loc['ALL','out_gap_filled'])} all days · range {mr.loc[m,'out_range_atr']:.2f}×ATR "
@@ -92,7 +157,7 @@ def main(prices_file: str):
 
     feats = []
     for k, name in FEATS.items():
-        if k in df and not pd.isna(row[k]):
+        if k in row.index and not pd.isna(row[k]):
             feats.append({"key": k, "name": name, "value": round(float(row[k]), 3), "pct_1y": round(pct_rank(df[k], row[k]), 2)})
 
     # Point/dollar translation at today's index level — display only; the
@@ -118,8 +183,8 @@ def main(prices_file: str):
     up_p = {q: float(br.loc[lab, f"out_up_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
     dn_p = {q: float(br.loc[lab, f"out_dn_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
     gap_info = None
-    if bool(mods["BIG_GAP"].iloc[-1]):
-        gap_mr = modifier_rates(df_stats, mods["BIG_GAP"].reindex(df_stats.index), "BIG_GAP", outcomes=["out_gap_filled"])
+    if bool(mods_fwd["BIG_GAP"].iloc[-1]):
+        gap_mr = modifier_rates(df_stats, mods_hist["BIG_GAP"].reindex(df_stats.index), "BIG_GAP", outcomes=["out_gap_filled"])
         gap_feat = next((f for f in feats if f["key"] == "gap_atr"), None)
         gap_info = {
             "atr": gap_feat["value"] if gap_feat else None,
@@ -208,20 +273,23 @@ def main(prices_file: str):
     events = [{"date": str(d.date()), "event": e} for d, e in zip(cal.date, cal.event)]
 
     # Staleness: business days between the page's data date and the real today.
-    # 0-1 is normal (yesterday's completed session renders pre-open). More than
-    # 1 means the pipeline failed or the data source stalled — say so loudly
-    # instead of silently serving old numbers (which happened on 2026-09-14/15).
+    # quick-260915-va7: `today` is now the FORWARD (next-session) date, so on a
+    # healthy schedule it equals the viewer's actual current trading day — the
+    # old 1-business-day tolerance existed only to paper over the one-session
+    # lag this change removes, and made a stalled pipeline invisible. Anything
+    # older than the current trading day is stale now.
     now = pd.Timestamp.now().normalize()
     age_bdays = max(0, len(pd.bdate_range(today, now)) - 1)
-    stale = age_bdays > 1
+    stale = age_bdays > 0
 
     payload = {
         "as_of": str(today.date()), "label": lab, "description": DESCR[lab],
         "n_days_like_this": int(br.loc[lab, "n"]), "n_all": int(br.loc["ALL", "n"]),
         "sample_start": str(df_stats.index[0].date()), "features": feats, "base_rates": rates, "events": events,
         "label_counts": labs.value_counts().to_dict(),
-        "modifier_counts": {m: int(mods[m].sum()) for m in mods.columns},
+        "modifier_counts": {m: int(mods_hist[m].sum()) for m in mods_hist.columns},
         "modifiers": active_mods,
+        "gap_known": gap_known,
         "data_source": data_source,
         "age_bdays_at_render": int(age_bdays), "stale_at_render": bool(stale),
         "instrument": INSTRUMENT["name"], "dollars_per_point": INSTRUMENT["dollars_per_point"],
@@ -427,6 +495,7 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 .modname{{font-size:15px;font-weight:600;color:var(--fg)}}
 .modcopy{{font-size:13px;color:var(--muted);margin-top:2px}}
 .modline{{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}}
+.mod-pending{{border-left:3px dashed var(--line);padding:8px 0 8px 12px;margin-top:14px;color:var(--muted);font-size:13px;font-style:italic}}
 .stale{{display:none;background:#3a1d1d;border:1px solid #7a2e2e;color:#ffb4b4;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-weight:600}}
 .section-head{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}}
 .stamp{{font-family:var(--mono,ui-monospace);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}}
@@ -459,12 +528,15 @@ input[type=range]{{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22p
 <script>
 // Staleness computed in the BROWSER, not at render time — a dead pipeline
 // never re-renders, so only the viewer's clock can catch a frozen page.
+// quick-260915-va7: as_of is now the FORWARD (next-session) date, so on a
+// healthy schedule it equals today — any lag at all means the pipeline
+// didn't run. The old >1 tolerance existed only to hide that lag.
 (function() {{
   var asOf = new Date("{p["as_of"]}T00:00:00");
   var now = new Date(); now.setHours(0,0,0,0);
   var bdays = 0, d = new Date(asOf);
   while (d < now) {{ d.setDate(d.getDate() + 1); var w = d.getDay(); if (w !== 0 && w !== 6) bdays++; }}
-  if (bdays > 1) {{
+  if (bdays > 0) {{
     var el = document.getElementById("stale");
     el.textContent = "⚠ STALE DATA — this page's data is from {p["as_of"]}, " + bdays +
       " trading days old. The daily pipeline likely failed; check logs/daily.log on the Mac Mini.";
@@ -474,7 +546,8 @@ input[type=range]{{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22p
 </script>
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
-{"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}</div>
+{"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}
+{'<div class="mod-pending">Gap: not yet known — updates after the open.</div>' if not p.get("gap_known") else ""}</div>
 {envelope_html(p)}
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 {"".join(fmt(r) for r in p["base_rates"])}</table>
@@ -487,5 +560,10 @@ input[type=range]{{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22p
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--prices", default="qqq_daily.csv")
-    main(ap.parse_args().prices)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--prices", default="qqq_daily.csv")
+    ap.add_argument("--postopen", action="store_true",
+                     help="Optional 9:31 ET re-render: use the real open if available (adds gap/BIG_GAP); "
+                          "falls back to the pre-open forward render if the open isn't in the data yet.")
+    args = ap.parse_args()
+    main(args.prices, postopen=args.postopen)

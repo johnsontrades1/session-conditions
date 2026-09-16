@@ -50,9 +50,20 @@ def label(f: pd.DataFrame, p: dict = P) -> pd.Series:
 def modifiers(f: pd.DataFrame, p: dict = P) -> pd.DataFrame:
     """Independent boolean modifiers — may co-occur with any primary regime.
     Each is scored on its own against the unconditional baseline; no
-    intersection stats (n goes thin fast — deliberately out of scope)."""
+    intersection stats (n goes thin fast — deliberately out of scope).
+
+    BIG_GAP needs gap_atr, which doesn't exist pre-open (the gap isn't known
+    until the session opens) — quick-260915-va7's forward feature row omits
+    it entirely. Falls back to all-False rather than raising, which is what
+    makes BIG_GAP a post-open-only modifier: absent, not guessed at, when the
+    gap is unknown.
+    """
+    if "gap_atr" in f.columns:
+        big_gap = f.gap_atr >= p["gap_big"]
+    else:
+        big_gap = pd.Series(False, index=f.index)
     return pd.DataFrame({
-        "BIG_GAP": f.gap_atr >= p["gap_big"],
+        "BIG_GAP": big_gap,
         "EVENT": (f.event_day | f.pre_fomc).astype(bool),
     }, index=f.index)
 

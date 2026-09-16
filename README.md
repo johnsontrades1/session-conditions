@@ -5,13 +5,21 @@ label (STRETCHED / COILED / EXPANDED / HIGH_VOL / EVENT / BIG_GAP / NEUTRAL) and
 **backtested base rates** for days that looked like this before the open.
 No forecasts — only historical frequencies with confidence intervals.
 
+Renders a **forward** row for the next trading session, built only from
+completed-session data — the page describes the session that's about to
+happen, not the one that already closed. BIG_GAP is a post-open-only modifier
+(the gap isn't knowable pre-open) and is absent by default; `--postopen`
+adds it once the real open exists. The historical backtest keeps every
+feature/outcome regardless of which row the live page renders.
+
 ## Run it
 
 ```bash
 pip install -r requirements.txt
 python fetch_data.py        # pulls NQ, QQQ, VIX, VIX3M, VVIX, NDX, 60d of 5-min NQ  (needs internet)
 python regime.py            # backtest: which labels actually discriminate, and are they stable?
-python today.py             # writes docs/index.html + docs/today.json
+python today.py             # forward pre-open read for the NEXT session
+python today.py --postopen  # optional: re-render with the real open once it exists (adds gap/BIG_GAP)
 open docs/index.html
 ```
 
@@ -41,7 +49,13 @@ not RTH, and contaminates gap stats. Tests: `python -m pytest tests/ -q`.
 ## Daily automation
 
 - LaunchAgent `com.johnsontrades.session-conditions` (copy in `deploy/`) runs
-  `run_daily.sh` weekdays 7:40 AM CT: fetch → render → commit+push `docs/`.
+  `run_daily.sh` weekdays 7:40 AM CT: fetch → render (forward pre-open row) →
+  commit+push `docs/`.
 - Page: https://johnsontrades1.github.io/session-conditions/ (Pages serves `main`/`docs`)
-- Log: `logs/daily.log`. Stale date on the page = failed run — check the log.
+- Log: `logs/daily.log`. Stale date on the page = failed run — check the log
+  (same-day tolerance now: any lag at all is flagged, not just >1 day).
 - Manage: `launchctl unload/load ~/Library/LaunchAgents/com.johnsontrades.session-conditions.plist`
+- **Optional** 9:31 ET re-render with the real open (adds gap/BIG_GAP):
+  `com.johnsontrades.session-conditions-postopen.plist` (copy in `deploy/`,
+  runs `run_postopen.sh`) — not loaded by default, activate with
+  `launchctl load ~/Library/LaunchAgents/com.johnsontrades.session-conditions-postopen.plist`
