@@ -49,3 +49,28 @@ class TestPreFomc:
         idx = pd.bdate_range("2020-02-03", "2020-03-31")
         flags = event_flags(idx)
         assert flags["pre_fomc"].loc["2020-03-02"]
+
+
+class TestCalendarCoverage:
+    def test_fomc_eight_per_year_1999_2019(self):
+        from events import build_calendar
+        cal = build_calendar("1999-01-01", "2019-12-31")
+        per_year = cal[cal.event == "FOMC"].date.dt.year.value_counts()
+        for y in range(1999, 2020):
+            assert per_year.get(y, 0) == 8, f"{y}: {per_year.get(y, 0)} FOMC dates"
+
+    def test_cpi_twelve_per_year_1999_2024(self):
+        from events import build_calendar
+        cal = build_calendar("1999-01-01", "2024-12-31")
+        per_year = cal[cal.event == "CPI"].date.dt.year.value_counts()
+        for y in range(1999, 2025):
+            assert per_year.get(y, 0) == 12, f"{y}: {per_year.get(y, 0)} CPI dates"
+
+    def test_full_coverage_start_predates_qqq_sample(self):
+        import pandas as pd
+        from events import FULL_COVERAGE_START
+        assert pd.Timestamp(FULL_COVERAGE_START) <= pd.Timestamp("1999-04-08")
+
+    def test_shutdown_delayed_cpi_present(self):
+        from events import CPI
+        assert "2013-10-30" in CPI

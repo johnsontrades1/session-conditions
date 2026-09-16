@@ -24,7 +24,7 @@ DESCR = {
     "COILED":   "Recent ranges are compressed vs. the 20-day norm. Volatility clusters — quiet tape tends to stay quiet near-term, so small-range days are MORE likely, not less. The 'coiled spring' pop is not the base case.",
     "EXPANDED": "Ranges have already expanded well above the 20-day norm. Volatility clusters — big-range days tend to stay elevated near-term. Don't fade range size early.",
     "HIGH_VOL": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common — size accordingly.",
-    "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Calendar coverage is complete only since 2022, so stats below use 2022+ — suggestive (wider ranges), but UNPROVEN over longer history.",
+    "EVENT":    "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common — a real but small effect (validated on the full 1999+ calendar).",
     "BIG_GAP":  "Opening gap is large (≥0.6 ATR). Same-day fill rate is low (~27% vs ~67% all days) — this is arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider; check the table.",
     "NEUTRAL":  "Nothing in the pre-open data stands out. Treat base rates as unconditional.",
 }
@@ -51,15 +51,16 @@ def main(prices_file: str):
     today = df.index[-1]
     row, lab = df.iloc[-1], labs.iloc[-1]
 
-    # EVENT stats are only valid where the event calendar is complete — before
-    # 2022 the label meant something thinner (no CPI; nothing at all pre-2010),
-    # so full-sample EVENT base rates compare apples to oranges.
+    # EVENT stats are only valid where the event calendar is complete. Since the
+    # 2026-09-15 backfill FULL_COVERAGE_START is 1999-01-01, which predates the
+    # sample, so this restriction is a no-op — it stays as a guard in case the
+    # price sample is ever extended before the calendar is.
     stats_note = None
-    if lab == "EVENT":
+    if lab == "EVENT" and df.index[0] < pd.Timestamp(FULL_COVERAGE_START):
         cut = df.index >= FULL_COVERAGE_START
         df_stats, labs_stats = df[cut], labs[cut]
-        stats_note = (f"EVENT stats restricted to {FULL_COVERAGE_START[:4]}+ — the only span with "
-                      f"complete FOMC/CPI/NFP coverage. Small sample, one macro regime: UNPROVEN over longer history.")
+        stats_note = (f"EVENT stats restricted to {FULL_COVERAGE_START[:4]}+ — the span with "
+                      f"complete FOMC/CPI/NFP coverage.")
     else:
         df_stats, labs_stats = df, labs
     br = base_rates(df_stats, labs_stats)

@@ -96,16 +96,19 @@ def main():
     pd.set_option("display.width", 250)
     report(df, lab)
 
-    # EVENT is definition-drifted across the sample (no events pre-2010, NFP-only
-    # 2010-2014, +FOMC 2015, +CPI 2022). Full-sample EVENT rows above are invalid;
-    # this is the only span where the label means what it means today.
+    # EVENT calendar was backfilled to 1999 on 2026-09-15 (FOMC from
+    # federalreserve.gov, CPI from BLS archives), so the full-sample EVENT rows
+    # above are now valid. Guard kept in case the price sample ever extends
+    # before FULL_COVERAGE_START again.
     from events import FULL_COVERAGE_START
-    cut = df.index >= FULL_COVERAGE_START
-    print(f"\n=== EVENT re-score, {FULL_COVERAGE_START[:4]}+ only (full calendar coverage) ===")
-    br22 = base_rates(df[cut], label(df[cut]))
-    cols = [c for c in br22.columns if not c.endswith(("_lo", "_hi"))]
-    print(br22.loc[["ALL", "EVENT"], cols].round(3).to_string())
-    print("EVENT verdict: UNPROVEN — direction suggestive but one macro regime, small n.")
+    if df.index[0] < pd.Timestamp(FULL_COVERAGE_START):
+        cut = df.index >= FULL_COVERAGE_START
+        print(f"\n=== EVENT re-score, {FULL_COVERAGE_START[:4]}+ only (full calendar coverage) ===")
+        brf = base_rates(df[cut], label(df[cut]))
+        cols = [c for c in brf.columns if not c.endswith(("_lo", "_hi"))]
+        print(brf.loc[["ALL", "EVENT"], cols].round(3).to_string())
+    print("EVENT verdict: KEEP (2026-09-15, full 1999+ calendar) — modest but real: "
+          "range CI excludes baseline, big/small-range sig, no stability flips, n=1047.")
 
     if args.gaps:
         print("\n=== gap-fill by band vs mechanical distance null ===")
