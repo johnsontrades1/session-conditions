@@ -30,6 +30,26 @@ def flat(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def merge_save(df: pd.DataFrame, name: str):
+    """Merge new rows into the existing CSV instead of clobbering it.
+
+    yfinance sometimes returns a truncated history (2026-09-15: ^VIX3M came back
+    ending two months early and the daily run silently overwrote good data).
+    Never let a shorter pull destroy rows we already have; warn when the fresh
+    pull's end lags what's on disk.
+    """
+    out = OUT / name
+    if out.exists():
+        old = pd.read_csv(out, parse_dates=["date"], index_col="date").sort_index()
+        if df.index.max() < old.index.max():
+            print(f"!! {name}: fresh pull ends {df.index.max().date()} but disk has "
+                  f"{old.index.max().date()} — keeping existing rows", file=sys.stderr)
+        df = pd.concat([old, df])
+        df = df[~df.index.duplicated(keep="last")].sort_index()
+    df.to_csv(out)
+    print(f"{name}: {len(df)} rows  {df.index.min().date()} → {df.index.max().date()}")
+
+
 def daily(ticker: str, start: str, name: str, cols=None):
     df = flat(yf.download(ticker, start=start, auto_adjust=False, progress=False))
     if df.empty:
@@ -37,14 +57,27 @@ def daily(ticker: str, start: str, name: str, cols=None):
         return
     if cols:
         df = df[cols]
-    df.to_csv(OUT / name)
-    print(f"{name}: {len(df)} rows  {df.index.min().date()} → {df.index.max().date()}")
+    merge_save(df, name)
+
+
+def vix3m_cboe():
+    """Supplement ^VIX3M with CBOE's official history — yfinance's feed for it
+    is unreliable (see merge_save note)."""
+    url = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX3M_History.csv"
+    try:
+        df = pd.read_csv(url, parse_dates=["DATE"]).rename(columns=str.lower)
+        df = df.set_index("date")[["close"]].sort_index()
+        df.index.name = "date"
+        merge_save(df, "vix3m.csv")
+    except Exception as e:  # noqa: BLE001 — network supplement, never fatal
+        print(f"!! vix3m CBOE supplement failed: {e}", file=sys.stderr)
 
 
 daily("NQ=F", "2000-01-01", "nq_daily.csv", ["open", "high", "low", "close", "volume"])
 daily("QQQ", "1999-03-10", "qqq_daily.csv", ["open", "high", "low", "close", "volume"])
 daily("^VIX", "1990-01-01", "vix.csv", ["open", "high", "low", "close"])
 daily("^VIX3M", "2007-01-01", "vix3m.csv", ["close"])
+vix3m_cboe()
 daily("^VVIX", "2007-01-01", "vvix.csv", ["close"])
 
 intra = flat(yf.download("NQ=F", period="60d", interval="5m", auto_adjust=False, progress=False))

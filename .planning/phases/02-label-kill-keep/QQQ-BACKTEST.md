@@ -107,10 +107,10 @@ DESCR strings that contradicted or overclaimed the evidence, rewritten (2 passes
   across both datasets and 27 years. NQ-specific re-validation optional via
   fetch_databento.py when user funds a pull (~$2-10 estimated, cost-guarded).
 - EVENT label strength differs NQ vs QQQ — futures react to macro harder. Keep watching.
-- Pre-2022 event-calendar gaps also mean some true event days sit inside OTHER labels'
-  historical samples (as false NEUTRAL/COILED/etc.). Events are ~5-14% of days, so the
-  dilution is small and every other label's verdict also replicated on the NQ sample,
-  but a full calendar backfill would clean this up too.
+- (Resolved 2026-09-15) Pre-2022 calendar gaps previously leaked true event days into
+  other labels' samples. The 1999 backfill fixed this: ~100 pre-2015 days reclassified
+  to EVENT (e.g., COILED n 1065→962). Other labels' effects unchanged in direction and
+  significance after the reclassification.
 
 ## Requirement mapping
 
