@@ -14,8 +14,26 @@ tr.ns td{opacity:.55} th{text-align:left;color:var(--muted);font-weight:500;font
 .modname{font-size:15px;font-weight:600;color:var(--fg)}
 .modcopy{font-size:13px;color:var(--muted);margin-top:2px}
 .modline{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}
+.stale{display:none;background:#3a1d1d;border:1px solid #7a2e2e;color:#ffb4b4;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-weight:600}
 </style></head><body>
+<div id="stale" class="stale"></div>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for 2026-09-14. Base rates, not forecasts. Data: QQQ, RTH 9:30 ET opens (yfinance)</div>
+<script>
+// Staleness computed in the BROWSER, not at render time — a dead pipeline
+// never re-renders, so only the viewer's clock can catch a frozen page.
+(function() {
+  var asOf = new Date("2026-09-14T00:00:00");
+  var now = new Date(); now.setHours(0,0,0,0);
+  var bdays = 0, d = new Date(asOf);
+  while (d < now) { d.setDate(d.getDate() + 1); var w = d.getDay(); if (w !== 0 && w !== 6) bdays++; }
+  if (bdays > 1) {
+    var el = document.getElementById("stale");
+    el.textContent = "⚠ STALE DATA — this page's data is from 2026-09-14, " + bdays +
+      " trading days old. The daily pipeline likely failed; check logs/daily.log on the Mac Mini.";
+    el.style.display = "block";
+  }
+})();
+</script>
 <div class="card"><div class="label">COILED</div><div>Recent ranges are compressed vs. the 20-day norm. Volatility clusters — quiet tape tends to stay quiet near-term, so small-range days are MORE likely, not less. The 'coiled spring' pop is not the base case.</div>
 <div class="muted" style="margin-top:8px">1131 sessions like this out of 6901 since 1999-04-08</div>
 <div class="mod"><div class="modname">+ BIG_GAP</div><div class="modcopy">Opening gap is large (≥0.6 ATR). Same-day fill rate is low — arithmetic, not behavior: fill odds match what the gap distance and the day's range imply. Ranges run wider.</div><div class="modline">793 days like this: P(gap filled) 27% vs 67% all days · range 1.14×ATR vs 0.93</div></div></div>

@@ -94,6 +94,14 @@ def main(prices_file: str):
     cal = build_calendar(str(today.date()), str((today + pd.Timedelta(days=10)).date()))
     events = [{"date": str(d.date()), "event": e} for d, e in zip(cal.date, cal.event)]
 
+    # Staleness: business days between the page's data date and the real today.
+    # 0-1 is normal (yesterday's completed session renders pre-open). More than
+    # 1 means the pipeline failed or the data source stalled — say so loudly
+    # instead of silently serving old numbers (which happened on 2026-09-14/15).
+    now = pd.Timestamp.now().normalize()
+    age_bdays = max(0, len(pd.bdate_range(today, now)) - 1)
+    stale = age_bdays > 1
+
     payload = {
         "as_of": str(today.date()), "label": lab, "description": DESCR[lab],
         "n_days_like_this": int(br.loc[lab, "n"]), "n_all": int(br.loc["ALL", "n"]),
@@ -102,6 +110,7 @@ def main(prices_file: str):
         "modifier_counts": {m: int(mods[m].sum()) for m in mods.columns},
         "modifiers": active_mods,
         "data_source": data_source,
+        "age_bdays_at_render": int(age_bdays), "stale_at_render": bool(stale),
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
@@ -136,8 +145,26 @@ tr.ns td{{opacity:.55}} th{{text-align:left;color:var(--muted);font-weight:500;f
 .modname{{font-size:15px;font-weight:600;color:var(--fg)}}
 .modcopy{{font-size:13px;color:var(--muted);margin-top:2px}}
 .modline{{font-size:13px;margin-top:4px;font-variant-numeric:tabular-nums}}
+.stale{{display:none;background:#3a1d1d;border:1px solid #7a2e2e;color:#ffb4b4;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-weight:600}}
 </style></head><body>
+<div id="stale" class="stale"></div>
 <h1>Session Conditions</h1><div class="sub">Pre-open read for {p["as_of"]}. Base rates, not forecasts. Data: {p["data_source"]}</div>
+<script>
+// Staleness computed in the BROWSER, not at render time — a dead pipeline
+// never re-renders, so only the viewer's clock can catch a frozen page.
+(function() {{
+  var asOf = new Date("{p["as_of"]}T00:00:00");
+  var now = new Date(); now.setHours(0,0,0,0);
+  var bdays = 0, d = new Date(asOf);
+  while (d < now) {{ d.setDate(d.getDate() + 1); var w = d.getDay(); if (w !== 0 && w !== 6) bdays++; }}
+  if (bdays > 1) {{
+    var el = document.getElementById("stale");
+    el.textContent = "⚠ STALE DATA — this page's data is from {p["as_of"]}, " + bdays +
+      " trading days old. The daily pipeline likely failed; check logs/daily.log on the Mac Mini.";
+    el.style.display = "block";
+  }}
+}})();
+</script>
 <div class="card"><div class="label">{p["label"]}</div><div>{p["description"]}</div>
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
 {"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}</div>
