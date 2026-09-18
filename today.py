@@ -182,6 +182,31 @@ def main(prices_file: str, postopen: bool = False):
 
     up_p = {q: float(br.loc[lab, f"out_up_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
     dn_p = {q: float(br.loc[lab, f"out_dn_exc_p{q}"]) for q in (10, 25, 50, 75, 90)}
+
+    # Recent candles + a PROJECTED RANGE next to them — never a projected
+    # candle. A candle body implies a direction (up close vs down close);
+    # this project's honesty rule 5 forbids that for anything not yet
+    # observed. The projected column reuses the envelope's own up/dn
+    # percentiles (symmetric, single color, both directions styled
+    # identically) anchored at the last real close, on the SAME price axis
+    # as the real candles for visual scale comparison — not a forecast shape.
+    CHART_N = 15
+    recent = prices.tail(CHART_N)
+    anchor_price = float(recent["close"].iloc[-1])
+    atr20_price = float(row["atr20"]) if "atr20" in row.index and not pd.isna(row["atr20"]) else None
+    chart = None
+    if atr20_price:
+        chart = {
+            "candles": [
+                {"date": str(d.date()), "open": float(o), "high": float(h), "low": float(l), "close": float(c)}
+                for d, o, h, l, c in zip(recent.index, recent["open"], recent["high"], recent["low"], recent["close"])
+            ],
+            "anchor": anchor_price,
+            "proj_date": str(today.date()),
+            "proj_up": {str(q): anchor_price + up_p[q] * atr20_price for q in up_p},
+            "proj_dn": {str(q): anchor_price - dn_p[q] * atr20_price for q in dn_p},
+        }
+
     gap_info = None
     if bool(mods_fwd["BIG_GAP"].iloc[-1]):
         gap_mr = modifier_rates(df_stats, mods_hist["BIG_GAP"].reindex(df_stats.index), "BIG_GAP", outcomes=["out_gap_filled"])
@@ -296,10 +321,88 @@ def main(prices_file: str, postopen: bool = False):
         "ndx_level": round(ndx_level, 1) if ndx_level else None,
         "atr_points": round(atr_points, 1) if atr_points else None,
         "envelope": envelope,
+        "chart": chart,
     }
     (SITE / "today.json").write_text(json.dumps(payload, indent=2))
     (SITE / "index.html").write_text(render(payload))
     print(f"{today.date()}  →  {lab}   ({payload['n_days_like_this']} similar sessions since {payload['sample_start']})")
+
+
+def candle_chart_html(p: dict) -> str:
+    """Recent real daily candles + a PROJECTED RANGE column, sharing one
+    price axis. The projected column is never a candle shape (no implied
+    open/close direction) — it's the same style as the Range Envelope:
+    symmetric whisker (p10-p90) + shaded box (p25-p75) + median tick, single
+    accent color both directions, anchored at the last real close (dashed
+    reference line). Server-rendered SVG, no client JS."""
+    chart = p.get("chart")
+    if not chart:
+        return ""
+    candles, anchor = chart["candles"], chart["anchor"]
+    up, dn = chart["proj_up"], chart["proj_dn"]
+
+    all_prices = [anchor, up["90"], dn["90"]]
+    for c in candles:
+        all_prices += [c["high"], c["low"]]
+    p_min, p_max = min(all_prices), max(all_prices)
+    pad = (p_max - p_min) * 0.06 or 1.0
+    p_min, p_max = p_min - pad, p_max + pad
+
+    MARGIN_L, MARGIN_T, MARGIN_B = 44, 14, 26
+    COL_W, CANDLE_W, PROJ_W = 20, 10, 16
+    PLOT_H = 190
+    n_cols = len(candles) + 1
+    width = MARGIN_L + n_cols * COL_W + 20
+
+    def y(price):
+        return MARGIN_T + (p_max - price) / (p_max - p_min) * PLOT_H
+
+    def x_center(i):
+        return MARGIN_L + i * COL_W + COL_W / 2
+
+    parts = []
+    # y-axis gridlines + labels (min/mid/max only, keep it uncluttered)
+    for frac, price in ((0.0, p_max), (0.5, (p_max + p_min) / 2), (1.0, p_min)):
+        gy = MARGIN_T + frac * PLOT_H
+        parts.append(f'<line x1="{MARGIN_L-4}" y1="{gy:.1f}" x2="{width-10}" y2="{gy:.1f}" stroke="#262a35" stroke-width="1"/>')
+        parts.append(f'<text x="{MARGIN_L-8}" y="{gy+3:.1f}" fill="#8b93a7" font-family="IBM Plex Mono, monospace" font-size="9" text-anchor="end">{price:.1f}</text>')
+
+    for i, c in enumerate(candles):
+        cx = x_center(i)
+        up_day = c["close"] >= c["open"]
+        color = "#4fd1c5" if up_day else "#e0836b"
+        y_hi, y_lo = y(c["high"]), y(c["low"])
+        y_op, y_cl = y(c["open"]), y(c["close"])
+        body_top, body_h = min(y_op, y_cl), max(abs(y_cl - y_op), 1.0)
+        parts.append(f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="{color}" stroke-width="1.2"/>')
+        parts.append(f'<rect x="{cx-CANDLE_W/2:.1f}" y="{body_top:.1f}" width="{CANDLE_W}" height="{body_h:.1f}" fill="{color}"/>')
+
+    # Projected column — range only, identical styling both directions.
+    px = x_center(len(candles))
+    y_anchor = y(anchor)
+    y_u90, y_u75, y_u50, y_u25 = y(up["90"]), y(up["75"]), y(up["50"]), y(up["25"])
+    y_d90, y_d75, y_d50, y_d25 = y(dn["90"]), y(dn["75"]), y(dn["50"]), y(dn["25"])
+    parts.append(f'<line x1="{MARGIN_L-4}" y1="{y_anchor:.1f}" x2="{width-10}" y2="{y_anchor:.1f}" stroke="#e8eaf0" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>')
+    parts.append(f'<line x1="{px:.1f}" y1="{y_u90:.1f}" x2="{px:.1f}" y2="{y_d90:.1f}" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>')
+    parts.append(f'<rect x="{px-PROJ_W/2:.1f}" y="{y_u25:.1f}" width="{PROJ_W}" height="{max(y_u75-y_u25,1):.1f}" fill="#4fd1c5" opacity="0.30"/>')
+    parts.append(f'<rect x="{px-PROJ_W/2:.1f}" y="{y_d25:.1f}" width="{PROJ_W}" height="{max(y_d75-y_d25,1):.1f}" fill="#4fd1c5" opacity="0.30"/>')
+    parts.append(f'<line x1="{px-PROJ_W/2:.1f}" y1="{y_u50:.1f}" x2="{px+PROJ_W/2:.1f}" y2="{y_u50:.1f}" stroke="#4fd1c5" stroke-width="2"/>')
+    parts.append(f'<line x1="{px-PROJ_W/2:.1f}" y1="{y_d50:.1f}" x2="{px+PROJ_W/2:.1f}" y2="{y_d50:.1f}" stroke="#4fd1c5" stroke-width="2"/>')
+
+    height = MARGIN_T + PLOT_H + MARGIN_B
+    date_lo = candles[0]["date"] if candles else ""
+    date_hi = candles[-1]["date"] if candles else ""
+    svg = (f'<svg viewBox="0 0 {width} {height}" role="img" '
+           f'aria-label="{len(candles)} recent daily candles from {date_lo} to {date_hi}, '
+           f'plus a projected range for {chart["proj_date"]} anchored at {anchor:.1f} — '
+           f'range only, no direction shown for the projection.">'
+           + "".join(parts) +
+           f'<text x="{x_center(len(candles)//2):.1f}" y="{height-8}" fill="#8b93a7" font-family="IBM Plex Sans, sans-serif" font-size="9" text-anchor="middle">{date_lo} → {date_hi}</text>'
+           f'<text x="{px:.1f}" y="{height-8}" fill="#4fd1c5" font-family="IBM Plex Sans, sans-serif" font-size="9" text-anchor="middle">{chart["proj_date"]}</text>'
+           '</svg>')
+    return (f'<div class="card"><div class="section-head"><h2 style="font-size:16px;margin:0;font-weight:600">Recent sessions + projected range</h2></div>'
+            f'<p class="sub" style="color:var(--muted);font-size:13px;margin:4px 0 12px">Real daily candles, then the next session\'s range — teal band, no implied direction. Not a projected candle.</p>'
+            f'{svg}</div>')
 
 
 def envelope_svg(env: dict) -> str:
@@ -552,6 +655,7 @@ input[type=range]{{flex:2 1 220px;min-width:0;accent-color:var(--acc);height:22p
 <div class="muted" style="margin-top:8px">{p["n_days_like_this"]} sessions like this out of {p["n_all"]} since {p["sample_start"]}</div>
 {"".join(f'<div class="mod"><div class="modname">+ {m["name"]}</div><div class="modcopy">{m["description"]}</div><div class="modline">{m["line"]}</div></div>' for m in p.get("modifiers", []))}
 {'<div class="mod-pending">Gap: not yet known — updates after the open.</div>' if not p.get("gap_known") else ""}</div>
+{candle_chart_html(p)}
 {envelope_html(p)}
 <div class="card"><table><tr><th>What days like this did</th><th class="num">Days like this <span class="ci">[95% CI]</span></th><th class="num">All days</th><th class="num"></th></tr>
 {"".join(fmt(r) for r in p["base_rates"])}</table>
