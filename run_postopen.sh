@@ -22,11 +22,13 @@ log "=== run start ==="
 
 if ! "$PY" fetch_data.py >> "$LOG" 2>&1; then
     log "FATAL: fetch_data.py failed — page not updated"
+    osascript -e 'display notification "postopen: fetch_data.py failed. Check logs/daily.log" with title "Session Conditions"' 2>/dev/null
     exit 1
 fi
 
 if ! "$PY" today.py --postopen >> "$LOG" 2>&1; then
     log "FATAL: today.py --postopen failed — page not updated"
+    osascript -e 'display notification "postopen: today.py --postopen failed. Check logs/daily.log" with title "Session Conditions"' 2>/dev/null
     exit 1
 fi
 
@@ -38,6 +40,7 @@ if [ -n "$(git status --porcelain docs/)" ]; then
         log "published docs/ for $(date +%F)"
     else
         log "FATAL: git push failed — page rendered locally but not published"
+        osascript -e 'display notification "postopen: git push failed. Check logs/daily.log" with title "Session Conditions"' 2>/dev/null
         exit 1
     fi
 else
