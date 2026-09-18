@@ -384,7 +384,11 @@ def candle_chart_html(p: dict) -> str:
     y_d90, y_d75, y_d50, y_d25 = y(dn["90"]), y(dn["75"]), y(dn["50"]), y(dn["25"])
     parts.append(f'<line x1="{MARGIN_L-4}" y1="{y_anchor:.1f}" x2="{width-10}" y2="{y_anchor:.1f}" stroke="#e8eaf0" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>')
     parts.append(f'<line x1="{px:.1f}" y1="{y_u90:.1f}" x2="{px:.1f}" y2="{y_d90:.1f}" stroke="#4fd1c5" stroke-width="1" opacity="0.5"/>')
-    parts.append(f'<rect x="{px-PROJ_W/2:.1f}" y="{y_u25:.1f}" width="{PROJ_W}" height="{max(y_u75-y_u25,1):.1f}" fill="#4fd1c5" opacity="0.30"/>')
+    # Up-excursion prices INCREASE with percentile (75th > 25th price), so in
+    # pixel space y_u75 < y_u25 — the box's top edge is y_u75, not y_u25. Had
+    # this backwards originally: y_u75-y_u25 is negative, which the max(...,1)
+    # floor silently collapsed to a 1px sliver instead of a real band.
+    parts.append(f'<rect x="{px-PROJ_W/2:.1f}" y="{y_u75:.1f}" width="{PROJ_W}" height="{max(y_u25-y_u75,1):.1f}" fill="#4fd1c5" opacity="0.30"/>')
     parts.append(f'<rect x="{px-PROJ_W/2:.1f}" y="{y_d25:.1f}" width="{PROJ_W}" height="{max(y_d75-y_d25,1):.1f}" fill="#4fd1c5" opacity="0.30"/>')
     parts.append(f'<line x1="{px-PROJ_W/2:.1f}" y1="{y_u50:.1f}" x2="{px+PROJ_W/2:.1f}" y2="{y_u50:.1f}" stroke="#4fd1c5" stroke-width="2"/>')
     parts.append(f'<line x1="{px-PROJ_W/2:.1f}" y1="{y_d50:.1f}" x2="{px+PROJ_W/2:.1f}" y2="{y_d50:.1f}" stroke="#4fd1c5" stroke-width="2"/>')
