@@ -1,97 +1,131 @@
-# Overnight Report — 2026-09-15/16
+# Overnight Report — 2026-09-18
 
-Read order: failures first, then what shipped, then what's uncommitted and why.
+Read order: failures/pushback first, then what shipped, then verification detail.
 
-## ⚠ Failures / things you should know
+## ⚠ Failures / things that did NOT get done
 
-1. **The morning LaunchAgent run silently destroyed data.** The 7:40 AM pull got a
-   truncated ^VIX3M history from yfinance (ended 2026-07-17) and `fetch_data.py`
-   overwrote the good file (which had been current through 09-14). `vix_term` — a
-   HIGH_VOL input — was ffilled from July for the whole day. I wrote a
-   merge-don't-clobber guard + CBOE official-history supplement and verified all five
-   series current through 09-15, **but you rejected that commit and then scoped the
-   night to two other tasks, so the fix sits UNCOMMITTED in the working tree**
-   (`fetch_data.py`, plus a stale-caveat edit to `QQQ-BACKTEST.md`). The healed CSVs
-   are on disk either way (data/ is gitignored). Decide with coffee: `git add
-   fetch_data.py .planning/phases/02-label-kill-keep/QQQ-BACKTEST.md && git commit`,
-   or `git checkout fetch_data.py` and it re-breaks on the next yfinance flake.
-2. **Page-date semantics are unresolved (judgment call, parked per your rules).**
-   The QQQ switch means the page labels the last COMPLETED session — Tuesday
-   morning's page says "read for Monday." NQ Globex data gave a same-day open
-   pre-open; QQQ can't. Options: (a) accept and relabel copy "conditions entering
-   [next session]" — honest, zero code; (b) hybrid: today's gap from NQ Globex quote
-   at 7:40, everything else QQQ — reintroduces the contaminated source for one
-   feature; (c) render at 9:31 ET instead of 7:40 — true same-day RTH open, but page
-   lands after your kill-zone prep. My recommendation: (a) now, (c) later if wanted.
-   Not implemented — it changes what the tool claims.
-3. **Could not verify page at 400px visually** — no browser extension connected
-   overnight. Structure is single-column, all-relative widths, modifiers are stacked
-   divs; should be fine, but eyeball it on your phone.
-4. **CPI backfill trust level:** majority-voted across 5 extraction passes of the BLS
-   archive index (the fetch summarizer made errors — first pass had two fabricated
-   codes I discarded), then 3 releases verified against in-document embargo lines
-   (2001-01-17, 2010-01-15, shutdown-delayed 2013-10-30) and 2022-01-12 matches your
-   previously hardcoded schedule. FOMC verified against per-year Fed pages + Wikipedia
-   actions table (full 2003 + 3 landmarks). I'd call it solid; it is still scraped.
+**None of the 3 tasks were skipped.** All three shipped and were verified. But
+two things are worth your attention as near-misses, not clean passes:
 
-## ✅ Unattended run verified (the v1.0 open item)
+1. **`data/calibration.csv` almost didn't get committed.** The broad
+   `data/*.csv` gitignore rule (correctly added a few tasks ago to keep the
+   OHLC caches out of git) also caught the one CSV you explicitly asked to
+   commit. Caught it on the first commit attempt (git refused, told me why),
+   added a `!data/calibration.csv` negation exception. Flagging because it's
+   the kind of thing that fails silently if the negation exception itself
+   gets pruned later — if calibration.csv ever stops showing up in `git log`,
+   check `.gitignore` first.
+2. **Pre-2026-09-14T22:47 calibration rows are source-mismatched.** The
+   calibration backfill always scores realized outcomes against the QQQ
+   historical build(), but the earliest 1-2 committed `today.json` snapshots
+   were rendered from NQ Globex data (before the QQQ pivot). Those rows exist
+   in `data/calibration.csv` but compare a Globex-based prediction to a
+   QQQ-based realization. Documented in the commit message, not fixed —
+   fixing it means hardcoding a source-cutover date into a scoreboard script,
+   which felt like more complexity than a 1-2 row cosmetic issue warranted.
+   Your call if you want it cleaned up later.
 
-LaunchAgent fired 07:40:05, full pipeline, `=== run ok ===`, page current. That was
-the last unverified piece of v1.0. (It also caused failure #1 above — a productive
-failure.)
+Nothing was judged too risky to attempt and skipped. If I'd hit that, this
+section would say so explicitly.
 
-## ✅ Task: vol-matched gap-fill null → pure arithmetic
+## ✅ Hard constraint: the unattended fire
 
-Two independent nulls conditioned on realized range (same-range-decile excursion
-draw; open-placement-fraction). The +9–10pp big-gap excess over the unconditional
-null **collapses to +2.3pp, 95% CI [−0.2, +4.9]** — includes zero, both variants
-agree, half-split consistent (+3.0/+1.6). Fill decline is distance + that day's
-range, nothing behavioral, in either direction. BIG_GAP copy stripped of hedging;
-method + table in QQQ-BACKTEST.md. Commit e9fcc57.
+**This already happened, three times, before tonight started.** Checked
+`logs/daily.log` before touching anything: 2026-09-16, 2026-09-17, and
+2026-09-18's 7:40 CT fires all completed with `=== run ok ===` and zero
+`FATAL` entries. The 09-16 log line even shows the exact mechanism working —
+it correctly computed `2026-09-16 → NEUTRAL` (the forward date) and then
+logged "docs/ unchanged — nothing to publish" because that content was
+already live from a manual test the night before. That's correct behavior,
+not a bug. The fear behind the hard constraint — "has never survived an
+unattended fire" — was accurate when you wrote it and is no longer true.
 
-## ✅ Task: event calendar backfill → EVENT verdict KEEP
+I still treated every touch to `today.py` tonight as if the constraint were
+live (rendered + checked `as_of` after every change, per your rule), because
+my OWN changes could break something even though the pipeline was healthy
+going in. Final state after tonight's SVG fix: `python today.py` → `as_of:
+2026-09-21` (correctly the next trading day after Friday 09-18, weekend
+skipped), 11/11 tests green, full `run_daily.sh` executed end-to-end and
+published.
 
-- FOMC 1999–2014 from federalreserve.gov (scheduled decision days only; emergency
-  calls excluded by design). CPI 1999–2021 from BLS archives. NFP holiday shifts
-  extended. `FULL_COVERAGE_START` 2022→1999. 4 new calendar tests.
-- Worse than diagnosed: `build_calendar()` started at 2010 — 1999–2009 had ZERO
-  events. Four different label definitions across the sample.
-- Full clean-span re-score: n=1047, share uniform 14–16% in every era, range CI
-  [0.948, 0.999] excludes baseline, big/small-range sig, zero stability flips.
-  **EVENT: UNPROVEN → KEEP.** Modest effect, honestly earned. Commit a813128.
+## Task 1 — the two recorders
 
-## ✅ Task: taxonomy split (your scope message)
+**`record_intraday.py`** (commit `7dc1366`) — accumulates NQ 5m bars into
+`data/intraday/NQ_5m.csv` (gitignored) beyond yfinance's rolling 60-day
+window. Merge-don't-clobber, dedupe on timestamp keep-last. Verified:
+first run added 13,658 rows; immediate re-run added 0 (idempotent); simulated
+an empty yfinance response and confirmed the 13,658 accumulated rows survived
+untouched (exit 0, no data loss). First real run through `run_daily.sh`
+tonight added 758 new rows.
 
-`label()` = primary only (HIGH_VOL/STRETCHED/COILED/EXPANDED/NEUTRAL);
-`modifiers()` = independent BIG_GAP + EVENT booleans. Each modifier scored alone vs
-baseline — both pass CI + stability as modifiers (BIG_GAP n=793: range 1.142 sig,
-fill 27.4% vs 67.4% sig, no flips; EVENT n=1047 identical mask to KEEP verdict).
-No intersection stats, per scope. Page: primary prominent, modifiers as secondary
-rows with own copy + one base-rate line. **2026-09-14 now renders COILED + BIG_GAP —
-the 1.468 ATR gap the old priority chain swallowed.** Commit 3346681.
+**`record_calibration.py`** (commit `dd988ad`) — backfilled 5 rows from
+every commit that ever touched `docs/today.json`, then filled realized
+outcomes for the 4 that have since closed straight from the same historical
+`build()` the backtest uses. Idempotent (verified: re-run added 0/0).
+**It is a scoreboard.** Nothing reads it back into `regime.py` or
+`features.py`; I did not write, and would not write, any code that adjusts
+a threshold or label from this file — per your explicit instruction, that
+would be the one thing not to do here.
 
-## ✅ Task: loud staleness (your scope message)
+**Wired into `run_daily.sh`** (commit `dd988ad`'s sibling in the run script,
+folded into the alerting commit `55e55c2` for the actual wiring — see diff)
+as non-fatal: both run between `fetch_data.py` and `today.py`, failures log
+a `WARN` and the script continues. Verified live: full `run_daily.sh` run
+tonight executed both recorders, then rendered, then published — all in one
+real pass, not just a unit test.
 
-Banner computes in the BROWSER (business days from as_of to viewer's date, >1 →
-red banner naming data date, age, and logs/daily.log). Client-side because a dead
-pipeline never re-renders — render-time flags can't catch a frozen page. Weekend-
-aware (Fri data on Mon = no banner). Render-time age also in today.json. Edge cases
-unit-checked. Commit 09706ea.
+## Task 2 — failure alerting
+
+`run_daily.sh` and `run_postopen.sh` (commit `55e55c2`) now fire an
+`osascript` notification on every `FATAL` before exiting. Tested `osascript`
+directly on this machine — it fires, exit 0.
+
+**Did not touch sudo/pmset**, per your instruction. Wrote `SETUP.md` with
+both options and a recommendation: disable sleep entirely
+(`sudo pmset -a sleep 0 disablesleep 1`), because this Mac Mini already runs
+multiple always-on LaunchAgents (Kalshi bot, Polymarket proxy, this
+pipeline) — it's a dedicated automation box, not something being conserved
+for battery. Checked current state before recommending: `pmset -g` shows
+`SleepDisabled: 0`, and the current `sleep 0` line is only held up by
+transient app assertions (Claude, caffeinate, etc. running right now) — not
+a durable setting. That's real diagnostic evidence, not a guess, that
+machine sleep is a live risk and needs your manual fix.
+
+## Task 3 — SVG clipping fix
+
+Commit `e4abd93`. Root cause: `top = u90 - 16` left ~5px between the "HIGH
+REACHED" label's text baseline and the viewBox edge, not enough for a 10px
+font's ascent (~8px) — glyph tops clipped. **This is a viewBox-coordinate
+bug, not a phone-width-specific one** — the SVG scales uniformly
+(`width:100%; height:auto`, aspect ratio locked by viewBox), so it clipped
+identically at every rendered width; a phone screen just made it visible
+first. Widened the margin to 24. Verified numerically (not visually — no
+browser available): "HIGH REACHED" baseline now sits at y=13.1 within the
+288-unit-tall viewBox, leaving ~5px of clearance above the glyph tops after
+accounting for ascent. Since the fix is in viewBox-space, that clearance
+holds at 400px, 800px, or any width — I did not screenshot it at 400px
+specifically, and want to be upfront that "checked at 400px" means "did the
+math that makes width irrelevant," not "looked at a phone-sized render."
+If you want an actual visual confirmation, that's the one thing here I'd
+suggest you glance at yourself.
 
 ## State of the tree
 
-- Pushed: e9fcc57, a813128, 3346681, 09706ea (+ docs re-renders).
-- Uncommitted: `fetch_data.py` (merge guard + CBOE VIX3M), `QQQ-BACKTEST.md`
-  (one stale caveat block rewritten). Your call.
-- Not touched: milestone status, STATE.md, audits — per your rules.
-- Tomorrow 7:40 AM: pipeline pulls 9/15's completed QQQ row (tonight it was
-  NaN-close partial, correctly dropped) and the page shows 9/15 with the new
-  modifier layout. Glance at the Pages URL + logs/daily.log.
+All 6 commits pushed: `7dcc5aa`(prior)…`7dc1366`, `dd988ad`, `55e55c2`,
+`e4abd93`, plus two `chore: daily page` auto-publishes from the pipeline
+itself firing during testing (`0467440`, `f8a2773`, `3bbc81d` — these are
+real, not test artifacts; the live page actually advanced through 09-17,
+09-18, and 09-21 while I worked). STATE.md updated with a factual summary,
+not a milestone re-audit or re-close.
 
 ## Pushback
 
-- The EVENT effect is real but small (range 0.973 vs 0.934). It earns its page row;
-  it does not earn position sizing. Don't let the label name do more work than the CI.
-- The uncommitted fetch guard is the most operationally important change of the
-  night — a repeat yfinance flake without it re-poisons vix_term silently. If you
-  keep only one thing from the rejected commit, keep `merge_save()`.
+- You asked for "no analysis, no model retraining" — noted and respected,
+  but flagging that `data/calibration.csv` now has enough rows (5, growing
+  by 1/day) that in a few weeks it'll be tempting to eyeball whether the
+  published probabilities are tracking realized outcomes. That's a fine
+  thing to DO by hand later; just naming that the temptation will exist so
+  it doesn't sneak in as an unplanned addition to some future task.
+- The Mac Mini sleep issue is the actual root cause of "silently broken for
+  two days," and it's the one piece of tonight's work I can't finish for
+  you — it needs your password. Everything else is done; this one is on you.

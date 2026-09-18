@@ -59,6 +59,12 @@ User-directed integrity pass, all committed individually:
 
 ## Last Action
 
+2026-09-18 (overnight) — Two recorders shipped (intraday accumulator +
+calibration scoreboard), macOS failure alerting on FATAL, SETUP.md for
+manual sleep-prevention, envelope SVG clipping fix. Full report:
+.planning/OVERNIGHT-REPORT.md. Confirmed the 2026-09-15 same-day pre-open
+fix has been surviving unattended fires since 09-16.
+
 2026-09-14 — Post-milestone integrity fixes complete (5 commits): pre_fomc bug,
 QQQ source switch + page source stamp, EVENT→UNPROVEN, BIG_GAP/COILED/EXPANDED
 claim corrections, STATE sync. Page relabeled 2026-09-14 EVENT→COILED.
@@ -68,16 +74,27 @@ claim corrections, STATE sync. Page relabeled 2026-09-14 EVENT→COILED.
 - Live page: https://johnsontrades1.github.io/session-conditions/ — LaunchAgent
   `com.johnsontrades.session-conditions` weekdays 7:40 AM CT; log logs/daily.log;
   stale page date = failed run
-- Data: QQQ RTH (yfinance) validated source; NQ Globex kept as cross-check only;
-  fetch_databento.py ready when funded (~$2-10, $20 cost guard)
+- Data: QQQ RTH (yfinance) validated source; NQ Globex kept as cross-check only.
+  Databento integration removed entirely (bd8b7a1) — QQQ RTH is free and sufficient.
+- record_intraday.py accumulates NQ 5m history beyond yfinance's 60d window
+  (data/intraday/, gitignored). record_calibration.py scores published
+  predictions vs realized outcomes (data/calibration.csv, committed) — a
+  scoreboard only, nothing reads it back into the model. Both wired into
+  run_daily.sh as non-fatal steps.
 - Honesty rules in CLAUDE.md are hard constraints; if a fix kills a label, report
   the null — never tune it back
 
 ## Blockers/Concerns
 
-- First unattended LaunchAgent fire: next weekday 7:40 AM CT — verify page date + log
-- v2 candidates: FOMC/CPI calendar backfill (federalreserve.gov, bls.gov) to make
-  EVENT provable; Event Playbook; NQ Databento pull
+- ~~First unattended LaunchAgent fire~~ — RESOLVED: confirmed via logs/daily.log,
+  the same-day pre-open fix (7dcc5aa) survived three consecutive unattended
+  7:40 CT fires (09-16, 09-17, 09-18) with zero FATAL entries before the
+  2026-09-18 overnight session even started.
+- Mac Mini sleep: current pmset state has no durable sleep-prevention (only
+  transient app assertions). SETUP.md written with a recommendation
+  (disable sleep entirely) — needs the user to run `sudo pmset` manually.
+- v2 candidates: Event Playbook (now has an intraday feed accumulating via
+  record_intraday.py); NQ Databento pull
 
 ### Quick Tasks Completed
 
