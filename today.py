@@ -190,7 +190,7 @@ def main(prices_file: str, postopen: bool = False):
     # percentiles (symmetric, single color, both directions styled
     # identically) anchored at the last real close, on the SAME price axis
     # as the real candles for visual scale comparison — not a forecast shape.
-    CHART_N = 15
+    CHART_N = 30  # ~6 weeks — more swing highs/lows visible, was 15
     recent = prices.tail(CHART_N)
     anchor_price = float(recent["close"].iloc[-1])
     atr20_price = float(row["atr20"]) if "atr20" in row.index and not pd.isna(row["atr20"]) else None
@@ -349,8 +349,8 @@ def candle_chart_html(p: dict) -> str:
     p_min, p_max = p_min - pad, p_max + pad
 
     MARGIN_L, MARGIN_T, MARGIN_B = 44, 14, 26
-    COL_W, CANDLE_W, PROJ_W = 20, 10, 16
-    PLOT_H = 190
+    COL_W, CANDLE_W, PROJ_W = 15, 7, 12
+    PLOT_H = 210
     n_cols = len(candles) + 1
     width = MARGIN_L + n_cols * COL_W + 20
 
