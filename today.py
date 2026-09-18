@@ -319,7 +319,11 @@ def envelope_svg(env: dict) -> str:
 
     u90, u75, u50, u25 = y_up("90"), y_up("75"), y_up("50"), y_up("25")
     d90, d75, d50, d25 = y_dn("90"), y_dn("75"), y_dn("50"), y_dn("25")
-    top, bot = u90 - 16, d90 + 25
+    # "HIGH REACHED" sits at u90-11; a 10px font's ascent needs more than the
+    # 5px this margin used to leave above it, clipping glyph tops at any
+    # rendered width (viewBox coordinates, not a phone-specific bug — just
+    # most visible on a small screen). 24 leaves ~13px of clearance.
+    top, bot = u90 - 24, d90 + 25
 
     return f"""<svg viewBox="0 0 340 {bot - top + 20:.0f}" role="img" aria-label="Range envelope: {env['n']} days like this reached a median of {sign(lbl(up,'50'))} above the open and {lbl(dn,'50')} below, middle 50% spanning {lbl(up,'25')}-{lbl(up,'75')} up and {lbl(dn,'25')}-{lbl(dn,'75')} down.">
   <g transform="translate(0,{-top:.0f})">
