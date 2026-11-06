@@ -1,129 +1,129 @@
 {
-  "as_of": "2026-11-05",
-  "label": "NEUTRAL",
-  "description": "Nothing in the pre-open regime data stands out. Treat base rates as unconditional.",
-  "n_days_like_this": 2997,
-  "n_all": 6938,
+  "as_of": "2026-11-06",
+  "label": "HIGH_VOL",
+  "description": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common \u2014 size accordingly.",
+  "n_days_like_this": 1133,
+  "n_all": 6939,
   "sample_start": "1999-04-08",
   "features": [
     {
       "key": "range_5_20",
       "name": "5d/20d range ratio",
-      "value": 1.137,
-      "pct_1y": 0.73
+      "value": 1.544,
+      "pct_1y": 0.96
     },
     {
       "key": "prev_range_atr",
       "name": "Yesterday's range (ATR)",
-      "value": 1.036,
-      "pct_1y": 0.73
+      "value": 2.708,
+      "pct_1y": 0.99
     },
     {
       "key": "trend_20_atr",
       "name": "20-day move (ATR)",
-      "value": -4.866,
-      "pct_1y": 0.01
+      "value": -6.686,
+      "pct_1y": 0.0
     },
     {
       "key": "er_10",
       "name": "Efficiency ratio (10d)",
-      "value": 0.341,
-      "pct_1y": 0.65
+      "value": 0.472,
+      "pct_1y": 0.8
     },
     {
       "key": "pos_20d",
       "name": "Position in 20d range",
-      "value": 0.151,
-      "pct_1y": 0.11
+      "value": 0.0,
+      "pct_1y": 0.0
     },
     {
       "key": "vix",
       "name": "VIX (prior close)",
-      "value": 16.61,
-      "pct_1y": 0.4
+      "value": 28.18,
+      "pct_1y": 0.99
     },
     {
       "key": "vix_term",
       "name": "VIX / VIX3M",
-      "value": 0.884,
-      "pct_1y": 0.6
+      "value": 1.103,
+      "pct_1y": 1.0
     },
     {
       "key": "vix_rank_1y",
       "name": "VIX 1y percentile",
-      "value": 0.409,
-      "pct_1y": 0.41
+      "value": 0.988,
+      "pct_1y": 1.0
     },
     {
       "key": "rv5_rv20",
       "name": "Realized vol 5d/20d",
-      "value": 1.237,
-      "pct_1y": 0.78
+      "value": 1.565,
+      "pct_1y": 0.96
     }
   ],
   "base_rates": [
     {
       "key": "out_range_atr",
       "name": "Session range (\u00d7 ATR)",
-      "cond": 0.925,
-      "lo": 0.912,
-      "hi": 0.939,
+      "cond": 1.03,
+      "lo": 0.999,
+      "hi": 1.064,
       "all": 0.934,
-      "sig": false,
-      "p25": 0.658,
-      "p75": 1.107,
-      "pts": 514,
-      "pts_all": 519,
-      "pts_p25": 366,
-      "pts_p75": 615,
-      "usd_p25": 732,
-      "usd_p75": 1230
+      "sig": true,
+      "p25": 0.694,
+      "p75": 1.241,
+      "pts": 637,
+      "pts_all": 578,
+      "pts_p25": 429,
+      "pts_p75": 768,
+      "usd_p25": 858,
+      "usd_p75": 1536
     },
     {
       "key": "out_eff",
       "name": "Directional efficiency",
-      "cond": 0.466,
-      "lo": 0.456,
-      "hi": 0.476,
+      "cond": 0.489,
+      "lo": 0.473,
+      "hi": 0.504,
       "all": 0.472,
-      "sig": false,
-      "p25": 0.239,
-      "p75": 0.687
+      "sig": true,
+      "p25": 0.267,
+      "p75": 0.714
     },
     {
       "key": "out_trend_day",
       "name": "P(trend day)",
-      "cond": 0.349,
-      "lo": 0.332,
-      "hi": 0.365,
+      "cond": 0.386,
+      "lo": 0.356,
+      "hi": 0.414,
       "all": 0.357,
       "sig": false
     },
     {
       "key": "out_big_range",
       "name": "P(range \u2265 1.3 ATR)",
-      "cond": 0.139,
-      "lo": 0.126,
-      "hi": 0.151,
+      "cond": 0.218,
+      "lo": 0.194,
+      "hi": 0.242,
       "all": 0.153,
       "sig": true
     },
     {
       "key": "out_small_range",
       "name": "P(range \u2264 0.7 ATR)",
-      "cond": 0.294,
-      "lo": 0.277,
-      "hi": 0.311,
-      "all": 0.319,
+      "cond": 0.26,
+      "lo": 0.236,
+      "hi": 0.286,
+      "all": 0.318,
       "sig": true
     },
     {
       "key": "out_gap_filled",
       "name": "P(gap filled)",
-      "cond": 0.682,
-      "lo": 0.666,
+      "cond": 0.673,
+      "lo": 0.643,
       "hi": 0.699,
-      "all": 0.673,
+      "all": 0.672,
       "sig": false
     }
   ],
@@ -138,84 +138,90 @@
     }
   ],
   "label_counts": {
-    "NEUTRAL": 2997,
+    "NEUTRAL": 2998,
     "HIGH_VOL": 1133,
     "COILED": 1131,
     "STRETCHED": 977,
     "EXPANDED": 700
   },
   "modifier_counts": {
-    "BIG_GAP": 804,
+    "BIG_GAP": 805,
     "EVENT": 1064
   },
-  "modifiers": [],
+  "modifiers": [
+    {
+      "name": "EVENT",
+      "description": "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common \u2014 real but small (validated on the full 1999+ calendar).",
+      "line": "1064 days like this: range 0.97\u00d7ATR vs 0.93 \u00b7 P(range \u2264 0.7 ATR) 28% vs 32%"
+    }
+  ],
   "gap_known": false,
   "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
   "age_bdays_at_render": 0,
   "stale_at_render": false,
   "instrument": "MNQ",
   "dollars_per_point": 2.0,
-  "ndx_level": 28437.2,
-  "atr_points": 555.5,
+  "ndx_level": 26629.8,
+  "atr_points": 618.9,
   "envelope": {
-    "n": 2997,
+    "n": 1133,
     "up": {
       "10": {
-        "atr": 0.071,
-        "pts": 39
+        "atr": 0.079,
+        "pts": 49
       },
       "25": {
-        "atr": 0.18,
-        "pts": 100
+        "atr": 0.205,
+        "pts": 127
       },
       "50": {
-        "atr": 0.365,
-        "pts": 203
+        "atr": 0.419,
+        "pts": 259
       },
       "75": {
-        "atr": 0.633,
-        "pts": 351
+        "atr": 0.716,
+        "pts": 443
       },
       "90": {
-        "atr": 0.912,
-        "pts": 506
+        "atr": 1.022,
+        "pts": 632
       }
     },
     "dn": {
       "10": {
-        "atr": 0.068,
-        "pts": 38
+        "atr": 0.078,
+        "pts": 48
       },
       "25": {
-        "atr": 0.175,
-        "pts": 97
+        "atr": 0.162,
+        "pts": 101
       },
       "50": {
-        "atr": 0.372,
-        "pts": 207
+        "atr": 0.394,
+        "pts": 244
       },
       "75": {
-        "atr": 0.684,
-        "pts": 380
+        "atr": 0.714,
+        "pts": 442
       },
       "90": {
-        "atr": 1.068,
-        "pts": 593
+        "atr": 1.126,
+        "pts": 697
       }
     },
-    "close_up_pct": 52.0,
-    "close_up_lo": 50.3,
-    "close_up_hi": 53.8,
-    "big_range_today": 14,
+    "close_up_pct": 52.1,
+    "close_up_lo": 49.2,
+    "close_up_hi": 54.8,
+    "big_range_today": 22,
     "big_range_all": 15,
     "big_material": true,
-    "size_today_pts": 514,
-    "size_all_pts": 519,
-    "size_today_atr": 0.93,
+    "size_today_pts": 638,
+    "size_all_pts": 578,
+    "size_today_atr": 1.03,
     "size_all_atr": 0.93,
-    "size_material": false,
-    "size_p25_pts": 366,
-    "size_p75_pts": 615,
+    "size_material": true,
+    "size_p25_pts": 429,
+    "size_p75_pts": 768,
     "materiality_floor": 0.05,
     "gap": null,
     "slider": {
@@ -285,55 +291,55 @@
         100.0,
         100.0,
         100.0,
-        100.0,
-        100.0,
-        100.0,
+        99.9,
         99.9,
         99.8,
-        99.8,
+        99.7,
+        99.7,
         99.6,
-        99.4,
+        99.6,
+        99.6,
+        99.3,
         99.2,
         98.9,
-        98.4,
-        97.5,
-        96.7,
-        95.9,
-        94.8,
-        93.4,
-        92.0,
-        90.4,
+        98.6,
+        98.1,
+        97.8,
+        96.9,
+        96.0,
+        95.1,
+        94.2,
+        92.9,
+        92.1,
+        91.3,
+        90.3,
         88.8,
-        86.9,
+        87.6,
+        86.3,
         85.2,
-        82.7,
-        80.5,
-        78.5,
-        76.4,
-        74.2,
-        72.5,
-        70.3,
-        67.7,
-        65.5,
-        63.4,
-        60.6,
-        58.4,
-        55.7,
-        53.6,
-        50.9,
-        48.8,
-        46.1,
-        44.0,
-        42.2,
-        40.1,
-        38.3,
-        36.7,
-        35.2,
-        33.8,
-        32.4,
-        30.5,
-        29.0,
-        27.5
+        83.5,
+        82.0,
+        80.4,
+        79.1,
+        76.5,
+        74.8,
+        72.9,
+        70.7,
+        68.8,
+        66.7,
+        65.2,
+        63.5,
+        62.0,
+        60.5,
+        59.0,
+        56.8,
+        55.3,
+        53.7,
+        52.4,
+        50.7,
+        49.3,
+        48.3,
+        46.5
       ],
       "all": [
         100.0,
@@ -343,67 +349,60 @@
         100.0,
         100.0,
         100.0,
-        99.9,
+        100.0,
+        100.0,
         99.9,
         99.9,
         99.8,
         99.7,
+        99.7,
         99.5,
         99.2,
-        98.9,
+        99.0,
         98.6,
-        98.0,
-        97.4,
-        96.6,
-        95.6,
-        94.3,
+        98.2,
+        97.8,
+        97.1,
+        96.1,
+        95.3,
+        94.1,
         93.0,
-        91.4,
-        90.0,
-        88.6,
-        86.9,
-        85.1,
-        83.0,
-        80.7,
-        78.5,
+        91.5,
+        90.4,
+        88.9,
+        87.6,
+        85.9,
+        84.2,
+        82.2,
+        80.3,
+        78.2,
         76.4,
-        74.4,
-        72.1,
-        70.2,
-        67.9,
-        65.6,
-        63.4,
-        61.3,
-        58.9,
+        74.6,
+        72.6,
+        70.7,
+        69.0,
+        66.7,
+        64.7,
+        62.7,
+        60.8,
+        58.7,
         56.8,
-        54.3,
-        52.3,
-        49.8,
-        47.9,
-        45.8,
-        43.8,
-        42.1,
-        40.5,
-        38.8,
-        37.1,
-        35.5,
-        33.8,
-        32.4,
-        30.7,
-        29.4,
-        28.1
+        54.7,
+        52.8,
+        50.6,
+        48.7,
+        46.9,
+        44.9,
+        43.3,
+        41.9,
+        40.4,
+        38.9,
+        37.3
       ]
     }
   },
   "chart": {
     "candles": [
-      {
-        "date": "2026-09-24",
-        "open": 735.2899780273438,
-        "high": 742.6599731445312,
-        "low": 734.6199951171875,
-        "close": 741.0999755859375
-      },
       {
         "date": "2026-09-25",
         "open": 742.8300170898438,
@@ -606,23 +605,30 @@
         "high": 701.4500122070312,
         "low": 687.8699951171875,
         "close": 691.9500122070312
+      },
+      {
+        "date": "2026-11-05",
+        "open": 683.1199951171875,
+        "high": 683.6500244140625,
+        "low": 647.0499877929688,
+        "close": 647.0499877929688
       }
     ],
-    "anchor": 691.9500122070312,
-    "proj_date": "2026-11-05",
+    "anchor": 647.0499877929688,
+    "proj_date": "2026-11-06",
     "proj_up": {
-      "10": 692.9094534690599,
-      "25": 694.3797620699995,
-      "50": 696.8796235350396,
-      "75": 700.5025837402344,
-      "90": 704.272793147844
+      "10": 648.2318435857612,
+      "25": 650.1315368593713,
+      "50": 653.3482173868085,
+      "75": 657.8120573881217,
+      "90": 662.4112134187469
     },
     "proj_dn": {
-      "10": 691.034771340213,
-      "25": 689.5786042433087,
-      "50": 686.9216475765187,
-      "75": 682.707659608768,
-      "90": 677.5164460928697
+      "10": 645.8839203695102,
+      "25": 644.6065385054749,
+      "50": 641.1268228029609,
+      "75": 636.318501907111,
+      "90": 630.117661688082
     }
   }
 }
