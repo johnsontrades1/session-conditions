@@ -1,63 +1,63 @@
 {
-  "as_of": "2026-11-06",
+  "as_of": "2026-11-09",
   "label": "HIGH_VOL",
   "description": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common \u2014 size accordingly.",
-  "n_days_like_this": 1133,
-  "n_all": 6939,
+  "n_days_like_this": 1134,
+  "n_all": 6940,
   "sample_start": "1999-04-08",
   "features": [
     {
       "key": "range_5_20",
       "name": "5d/20d range ratio",
-      "value": 1.544,
-      "pct_1y": 0.96
+      "value": 1.427,
+      "pct_1y": 0.93
     },
     {
       "key": "prev_range_atr",
       "name": "Yesterday's range (ATR)",
-      "value": 2.708,
-      "pct_1y": 0.99
+      "value": 0.7,
+      "pct_1y": 0.37
     },
     {
       "key": "trend_20_atr",
       "name": "20-day move (ATR)",
-      "value": -6.686,
+      "value": -6.083,
       "pct_1y": 0.0
     },
     {
       "key": "er_10",
       "name": "Efficiency ratio (10d)",
-      "value": 0.472,
-      "pct_1y": 0.8
+      "value": 0.37,
+      "pct_1y": 0.67
     },
     {
       "key": "pos_20d",
       "name": "Position in 20d range",
-      "value": 0.0,
-      "pct_1y": 0.0
+      "value": 0.088,
+      "pct_1y": 0.06
     },
     {
       "key": "vix",
       "name": "VIX (prior close)",
-      "value": 28.18,
-      "pct_1y": 0.99
+      "value": 25.64,
+      "pct_1y": 0.95
     },
     {
       "key": "vix_term",
       "name": "VIX / VIX3M",
-      "value": 1.103,
-      "pct_1y": 1.0
+      "value": 1.042,
+      "pct_1y": 0.98
     },
     {
       "key": "vix_rank_1y",
       "name": "VIX 1y percentile",
-      "value": 0.988,
-      "pct_1y": 1.0
+      "value": 0.952,
+      "pct_1y": 0.99
     },
     {
       "key": "rv5_rv20",
       "name": "Realized vol 5d/20d",
-      "value": 1.565,
+      "value": 1.615,
       "pct_1y": 0.96
     }
   ],
@@ -67,17 +67,17 @@
       "name": "Session range (\u00d7 ATR)",
       "cond": 1.03,
       "lo": 0.999,
-      "hi": 1.064,
+      "hi": 1.062,
       "all": 0.934,
       "sig": true,
       "p25": 0.694,
       "p75": 1.241,
-      "pts": 637,
-      "pts_all": 578,
-      "pts_p25": 429,
-      "pts_p75": 768,
-      "usd_p25": 858,
-      "usd_p75": 1536
+      "pts": 663,
+      "pts_all": 601,
+      "pts_p25": 447,
+      "pts_p75": 799,
+      "usd_p25": 894,
+      "usd_p75": 1598
     },
     {
       "key": "out_eff",
@@ -87,24 +87,24 @@
       "hi": 0.504,
       "all": 0.472,
       "sig": true,
-      "p25": 0.267,
+      "p25": 0.266,
       "p75": 0.714
     },
     {
       "key": "out_trend_day",
       "name": "P(trend day)",
-      "cond": 0.386,
-      "lo": 0.356,
-      "hi": 0.414,
+      "cond": 0.385,
+      "lo": 0.357,
+      "hi": 0.413,
       "all": 0.357,
-      "sig": false
+      "sig": true
     },
     {
       "key": "out_big_range",
       "name": "P(range \u2265 1.3 ATR)",
       "cond": 0.218,
       "lo": 0.194,
-      "hi": 0.242,
+      "hi": 0.241,
       "all": 0.153,
       "sig": true
     },
@@ -112,7 +112,7 @@
       "key": "out_small_range",
       "name": "P(range \u2264 0.7 ATR)",
       "cond": 0.26,
-      "lo": 0.236,
+      "lo": 0.235,
       "hi": 0.286,
       "all": 0.318,
       "sig": true
@@ -120,18 +120,14 @@
     {
       "key": "out_gap_filled",
       "name": "P(gap filled)",
-      "cond": 0.673,
-      "lo": 0.643,
-      "hi": 0.699,
+      "cond": 0.672,
+      "lo": 0.644,
+      "hi": 0.698,
       "all": 0.672,
       "sig": false
     }
   ],
   "events": [
-    {
-      "date": "2026-11-06",
-      "event": "NFP"
-    },
     {
       "date": "2026-11-10",
       "event": "CPI"
@@ -139,89 +135,83 @@
   ],
   "label_counts": {
     "NEUTRAL": 2998,
-    "HIGH_VOL": 1133,
+    "HIGH_VOL": 1134,
     "COILED": 1131,
     "STRETCHED": 977,
     "EXPANDED": 700
   },
   "modifier_counts": {
-    "BIG_GAP": 805,
-    "EVENT": 1064
+    "BIG_GAP": 806,
+    "EVENT": 1065
   },
-  "modifiers": [
-    {
-      "name": "EVENT",
-      "description": "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common \u2014 real but small (validated on the full 1999+ calendar).",
-      "line": "1064 days like this: range 0.97\u00d7ATR vs 0.93 \u00b7 P(range \u2264 0.7 ATR) 28% vs 32%"
-    }
-  ],
+  "modifiers": [],
   "gap_known": false,
   "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
   "age_bdays_at_render": 0,
   "stale_at_render": false,
   "instrument": "MNQ",
   "dollars_per_point": 2.0,
-  "ndx_level": 26629.8,
-  "atr_points": 618.9,
+  "ndx_level": 26990.0,
+  "atr_points": 643.6,
   "envelope": {
-    "n": 1133,
+    "n": 1134,
     "up": {
       "10": {
         "atr": 0.079,
-        "pts": 49
+        "pts": 51
       },
       "25": {
         "atr": 0.205,
-        "pts": 127
+        "pts": 132
       },
       "50": {
         "atr": 0.419,
-        "pts": 259
+        "pts": 270
       },
       "75": {
-        "atr": 0.716,
-        "pts": 443
+        "atr": 0.715,
+        "pts": 460
       },
       "90": {
-        "atr": 1.022,
-        "pts": 632
+        "atr": 1.021,
+        "pts": 657
       }
     },
     "dn": {
       "10": {
         "atr": 0.078,
-        "pts": 48
+        "pts": 50
       },
       "25": {
-        "atr": 0.162,
-        "pts": 101
+        "atr": 0.163,
+        "pts": 105
       },
       "50": {
-        "atr": 0.394,
-        "pts": 244
+        "atr": 0.393,
+        "pts": 253
       },
       "75": {
-        "atr": 0.714,
-        "pts": 442
+        "atr": 0.713,
+        "pts": 459
       },
       "90": {
         "atr": 1.126,
-        "pts": 697
+        "pts": 725
       }
     },
-    "close_up_pct": 52.1,
+    "close_up_pct": 52.0,
     "close_up_lo": 49.2,
-    "close_up_hi": 54.8,
+    "close_up_hi": 54.9,
     "big_range_today": 22,
     "big_range_all": 15,
     "big_material": true,
-    "size_today_pts": 638,
-    "size_all_pts": 578,
+    "size_today_pts": 663,
+    "size_all_pts": 601,
     "size_today_atr": 1.03,
     "size_all_atr": 0.93,
     "size_material": true,
-    "size_p25_pts": 429,
-    "size_p75_pts": 768,
+    "size_p25_pts": 446,
+    "size_p75_pts": 799,
     "materiality_floor": 0.05,
     "gap": null,
     "slider": {
@@ -294,6 +284,7 @@
         99.9,
         99.9,
         99.8,
+        99.8,
         99.7,
         99.7,
         99.6,
@@ -306,40 +297,39 @@
         98.1,
         97.8,
         96.9,
-        96.0,
+        96.1,
         95.1,
-        94.2,
-        92.9,
-        92.1,
-        91.3,
-        90.3,
-        88.8,
-        87.6,
-        86.3,
-        85.2,
-        83.5,
-        82.0,
-        80.4,
-        79.1,
-        76.5,
-        74.8,
-        72.9,
-        70.7,
-        68.8,
+        94.4,
+        93.3,
+        92.2,
+        91.4,
+        90.8,
+        89.4,
+        88.2,
+        86.9,
+        85.9,
+        84.6,
+        82.5,
+        81.0,
+        79.8,
+        77.9,
+        76.2,
+        74.2,
+        72.6,
+        70.3,
+        68.5,
         66.7,
-        65.2,
+        65.1,
         63.5,
         62.0,
         60.5,
-        59.0,
+        59.1,
         56.8,
-        55.3,
-        53.7,
-        52.4,
-        50.7,
-        49.3,
-        48.3,
-        46.5
+        55.6,
+        54.1,
+        52.5,
+        51.4,
+        49.7
       ],
       "all": [
         100.0,
@@ -353,63 +343,56 @@
         100.0,
         99.9,
         99.9,
+        99.9,
         99.8,
         99.7,
-        99.7,
-        99.5,
+        99.6,
+        99.4,
         99.2,
-        99.0,
+        98.9,
         98.6,
         98.2,
-        97.8,
+        97.7,
         97.1,
         96.1,
-        95.3,
-        94.1,
-        93.0,
-        91.5,
-        90.4,
-        88.9,
-        87.6,
-        85.9,
-        84.2,
-        82.2,
-        80.3,
-        78.2,
-        76.4,
-        74.6,
-        72.6,
-        70.7,
-        69.0,
-        66.7,
-        64.7,
-        62.7,
-        60.8,
-        58.7,
-        56.8,
+        95.4,
+        94.2,
+        93.2,
+        91.8,
+        90.7,
+        89.3,
+        88.1,
+        86.5,
+        85.0,
+        83.2,
+        81.1,
+        79.2,
+        77.4,
+        75.5,
+        73.7,
+        71.8,
+        70.3,
+        68.3,
+        66.4,
+        64.4,
+        62.4,
+        60.5,
+        58.6,
+        56.7,
         54.7,
-        52.8,
-        50.6,
-        48.7,
-        46.9,
-        44.9,
-        43.3,
-        41.9,
-        40.4,
-        38.9,
-        37.3
+        52.9,
+        50.9,
+        48.9,
+        47.2,
+        45.3,
+        43.7,
+        42.2,
+        40.8
       ]
     }
   },
   "chart": {
     "candles": [
-      {
-        "date": "2026-09-25",
-        "open": 742.8300170898438,
-        "high": 745.9199829101562,
-        "low": 739.6400146484375,
-        "close": 744.5
-      },
       {
         "date": "2026-09-28",
         "open": 740.4600219726562,
@@ -612,23 +595,30 @@
         "high": 683.6500244140625,
         "low": 647.0499877929688,
         "close": 647.0499877929688
+      },
+      {
+        "date": "2026-11-06",
+        "open": 658.3499755859375,
+        "high": 664.52001953125,
+        "low": 653.989990234375,
+        "close": 656.0999755859375
       }
     ],
-    "anchor": 647.0499877929688,
-    "proj_date": "2026-11-06",
+    "anchor": 656.0999755859375,
+    "proj_date": "2026-11-09",
     "proj_up": {
-      "10": 648.2318435857612,
-      "25": 650.1315368593713,
-      "50": 653.3482173868085,
-      "75": 657.8120573881217,
-      "90": 662.4112134187469
+      "10": 657.3303726627698,
+      "25": 659.3072643464616,
+      "50": 662.6517275121258,
+      "75": 667.2914375113892,
+      "90": 672.0812514767747
     },
     "proj_dn": {
-      "10": 645.8839203695102,
-      "25": 644.6065385054749,
-      "50": 641.1268228029609,
-      "75": 636.318501907111,
-      "90": 630.117661688082
+      "10": 654.8861895826294,
+      "25": 653.5504639554601,
+      "50": 649.9440818885769,
+      "75": 644.944457572367,
+      "90": 638.4856010281301
     }
   }
 }
