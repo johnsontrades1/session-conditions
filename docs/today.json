@@ -1,128 +1,128 @@
 {
-  "as_of": "2026-11-09",
-  "label": "HIGH_VOL",
-  "description": "VIX is elevated and/or term structure is inverted. Ranges are wider and directional days more common \u2014 size accordingly.",
-  "n_days_like_this": 1134,
-  "n_all": 6940,
+  "as_of": "2026-11-10",
+  "label": "EXPANDED",
+  "description": "Ranges have already expanded well above the 20-day norm. Volatility clusters \u2014 big-range days tend to stay elevated near-term. Don't fade range size early.",
+  "n_days_like_this": 700,
+  "n_all": 6941,
   "sample_start": "1999-04-08",
   "features": [
     {
       "key": "range_5_20",
       "name": "5d/20d range ratio",
-      "value": 1.427,
-      "pct_1y": 0.93
+      "value": 1.361,
+      "pct_1y": 0.9
     },
     {
       "key": "prev_range_atr",
       "name": "Yesterday's range (ATR)",
-      "value": 0.7,
-      "pct_1y": 0.37
+      "value": 1.308,
+      "pct_1y": 0.88
     },
     {
       "key": "trend_20_atr",
       "name": "20-day move (ATR)",
-      "value": -6.083,
-      "pct_1y": 0.0
+      "value": -4.007,
+      "pct_1y": 0.04
     },
     {
       "key": "er_10",
       "name": "Efficiency ratio (10d)",
-      "value": 0.37,
-      "pct_1y": 0.67
+      "value": 0.225,
+      "pct_1y": 0.45
     },
     {
       "key": "pos_20d",
       "name": "Position in 20d range",
-      "value": 0.088,
-      "pct_1y": 0.06
+      "value": 0.332,
+      "pct_1y": 0.26
     },
     {
       "key": "vix",
       "name": "VIX (prior close)",
-      "value": 25.64,
-      "pct_1y": 0.95
+      "value": 19.92,
+      "pct_1y": 0.8
     },
     {
       "key": "vix_term",
       "name": "VIX / VIX3M",
-      "value": 1.042,
-      "pct_1y": 0.98
+      "value": 0.955,
+      "pct_1y": 0.86
     },
     {
       "key": "vix_rank_1y",
       "name": "VIX 1y percentile",
-      "value": 0.952,
-      "pct_1y": 0.99
+      "value": 0.802,
+      "pct_1y": 0.85
     },
     {
       "key": "rv5_rv20",
       "name": "Realized vol 5d/20d",
-      "value": 1.615,
-      "pct_1y": 0.96
+      "value": 1.71,
+      "pct_1y": 1.0
     }
   ],
   "base_rates": [
     {
       "key": "out_range_atr",
       "name": "Session range (\u00d7 ATR)",
-      "cond": 1.03,
-      "lo": 0.999,
-      "hi": 1.062,
+      "cond": 1.088,
+      "lo": 1.049,
+      "hi": 1.13,
       "all": 0.934,
       "sig": true,
-      "p25": 0.694,
-      "p75": 1.241,
-      "pts": 663,
-      "pts_all": 601,
-      "pts_p25": 447,
-      "pts_p75": 799,
-      "usd_p25": 894,
-      "usd_p75": 1598
+      "p25": 0.759,
+      "p75": 1.289,
+      "pts": 744,
+      "pts_all": 639,
+      "pts_p25": 519,
+      "pts_p75": 881,
+      "usd_p25": 1038,
+      "usd_p75": 1762
     },
     {
       "key": "out_eff",
       "name": "Directional efficiency",
-      "cond": 0.489,
-      "lo": 0.473,
-      "hi": 0.504,
+      "cond": 0.491,
+      "lo": 0.472,
+      "hi": 0.51,
       "all": 0.472,
-      "sig": true,
-      "p25": 0.266,
-      "p75": 0.714
+      "sig": false,
+      "p25": 0.274,
+      "p75": 0.726
     },
     {
       "key": "out_trend_day",
       "name": "P(trend day)",
-      "cond": 0.385,
-      "lo": 0.357,
-      "hi": 0.413,
+      "cond": 0.387,
+      "lo": 0.353,
+      "hi": 0.423,
       "all": 0.357,
-      "sig": true
+      "sig": false
     },
     {
       "key": "out_big_range",
       "name": "P(range \u2265 1.3 ATR)",
-      "cond": 0.218,
-      "lo": 0.194,
-      "hi": 0.241,
+      "cond": 0.243,
+      "lo": 0.211,
+      "hi": 0.276,
       "all": 0.153,
       "sig": true
     },
     {
       "key": "out_small_range",
       "name": "P(range \u2264 0.7 ATR)",
-      "cond": 0.26,
-      "lo": 0.235,
-      "hi": 0.286,
+      "cond": 0.197,
+      "lo": 0.169,
+      "hi": 0.227,
       "all": 0.318,
       "sig": true
     },
     {
       "key": "out_gap_filled",
       "name": "P(gap filled)",
-      "cond": 0.672,
-      "lo": 0.644,
-      "hi": 0.698,
+      "cond": 0.653,
+      "lo": 0.617,
+      "hi": 0.687,
       "all": 0.672,
       "sig": false
     }
@@ -131,11 +131,15 @@
     {
       "date": "2026-11-10",
       "event": "CPI"
+    },
+    {
+      "date": "2026-11-20",
+      "event": "OPEX"
     }
   ],
   "label_counts": {
     "NEUTRAL": 2998,
-    "HIGH_VOL": 1134,
+    "HIGH_VOL": 1135,
     "COILED": 1131,
     "STRETCHED": 977,
     "EXPANDED": 700
@@ -144,74 +148,80 @@
     "BIG_GAP": 806,
     "EVENT": 1065
   },
-  "modifiers": [],
+  "modifiers": [
+    {
+      "name": "EVENT",
+      "description": "Scheduled macro event today (or FOMC tomorrow). Ranges run modestly wider and small-range days are less common \u2014 real but small (validated on the full 1999+ calendar).",
+      "line": "1065 days like this: range 0.97\u00d7ATR vs 0.93 \u00b7 P(range \u2264 0.7 ATR) 28% vs 32%"
+    }
+  ],
   "gap_known": false,
   "data_source": "QQQ, RTH 9:30 ET opens (yfinance)",
   "age_bdays_at_render": 0,
   "stale_at_render": false,
   "instrument": "MNQ",
   "dollars_per_point": 2.0,
-  "ndx_level": 26990.0,
-  "atr_points": 643.6,
+  "ndx_level": 27907.6,
+  "atr_points": 683.7,
   "envelope": {
-    "n": 1134,
+    "n": 700,
     "up": {
       "10": {
-        "atr": 0.079,
-        "pts": 51
+        "atr": 0.063,
+        "pts": 43
       },
       "25": {
-        "atr": 0.205,
-        "pts": 132
+        "atr": 0.191,
+        "pts": 131
       },
       "50": {
-        "atr": 0.419,
-        "pts": 270
+        "atr": 0.439,
+        "pts": 300
       },
       "75": {
-        "atr": 0.715,
-        "pts": 460
+        "atr": 0.721,
+        "pts": 493
       },
       "90": {
-        "atr": 1.021,
-        "pts": 657
+        "atr": 1.052,
+        "pts": 719
       }
     },
     "dn": {
       "10": {
-        "atr": 0.078,
-        "pts": 50
+        "atr": 0.054,
+        "pts": 37
       },
       "25": {
-        "atr": 0.163,
-        "pts": 105
+        "atr": 0.18,
+        "pts": 123
       },
       "50": {
-        "atr": 0.393,
-        "pts": 253
+        "atr": 0.421,
+        "pts": 288
       },
       "75": {
-        "atr": 0.713,
-        "pts": 459
+        "atr": 0.822,
+        "pts": 562
       },
       "90": {
-        "atr": 1.126,
-        "pts": 725
+        "atr": 1.311,
+        "pts": 896
       }
     },
-    "close_up_pct": 52.0,
-    "close_up_lo": 49.2,
-    "close_up_hi": 54.9,
-    "big_range_today": 22,
+    "close_up_pct": 52.9,
+    "close_up_lo": 49.1,
+    "close_up_hi": 56.4,
+    "big_range_today": 24,
     "big_range_all": 15,
     "big_material": true,
-    "size_today_pts": 663,
-    "size_all_pts": 601,
-    "size_today_atr": 1.03,
+    "size_today_pts": 744,
+    "size_all_pts": 639,
+    "size_today_atr": 1.09,
     "size_all_atr": 0.93,
     "size_material": true,
-    "size_p25_pts": 446,
-    "size_p75_pts": 799,
+    "size_p25_pts": 519,
+    "size_p75_pts": 881,
     "materiality_floor": 0.05,
     "gap": null,
     "slider": {
@@ -281,55 +291,55 @@
         100.0,
         100.0,
         100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
         99.9,
-        99.9,
-        99.8,
-        99.8,
-        99.7,
-        99.7,
-        99.6,
-        99.6,
-        99.6,
-        99.3,
-        99.2,
-        98.9,
-        98.6,
+        99.4,
+        99.4,
+        99.4,
+        99.4,
+        99.4,
+        99.4,
+        98.7,
+        98.3,
+        98.3,
         98.1,
-        97.8,
-        96.9,
-        96.1,
+        97.4,
+        96.7,
+        95.7,
         95.1,
-        94.4,
-        93.3,
-        92.2,
+        94.3,
+        93.4,
+        92.3,
         91.4,
-        90.8,
-        89.4,
-        88.2,
-        86.9,
-        85.9,
-        84.6,
-        82.5,
-        81.0,
-        79.8,
-        77.9,
-        76.2,
-        74.2,
-        72.6,
-        70.3,
-        68.5,
-        66.7,
-        65.1,
-        63.5,
-        62.0,
-        60.5,
-        59.1,
-        56.8,
-        55.6,
-        54.1,
-        52.5,
-        51.4,
-        49.7
+        89.6,
+        88.7,
+        87.4,
+        86.7,
+        86.1,
+        84.9,
+        83.4,
+        82.0,
+        80.1,
+        78.9,
+        77.3,
+        76.4,
+        74.7,
+        72.9,
+        70.6,
+        69.0,
+        67.6,
+        65.7,
+        63.4,
+        61.4,
+        60.3
       ],
       "all": [
         100.0,
@@ -341,65 +351,58 @@
         100.0,
         100.0,
         100.0,
+        100.0,
         99.9,
         99.9,
         99.9,
         99.8,
         99.7,
-        99.6,
-        99.4,
-        99.2,
-        98.9,
-        98.6,
-        98.2,
-        97.7,
-        97.1,
-        96.1,
-        95.4,
-        94.2,
-        93.2,
-        91.8,
+        99.7,
+        99.5,
+        99.3,
+        99.0,
+        98.7,
+        98.4,
+        98.0,
+        97.5,
+        96.8,
+        95.9,
+        95.3,
+        94.1,
+        93.0,
+        91.7,
         90.7,
-        89.3,
-        88.1,
-        86.5,
-        85.0,
-        83.2,
-        81.1,
-        79.2,
-        77.4,
-        75.5,
-        73.7,
-        71.8,
-        70.3,
-        68.3,
-        66.4,
-        64.4,
+        89.4,
+        88.2,
+        86.8,
+        85.3,
+        83.6,
+        81.8,
+        80.0,
+        78.1,
+        76.5,
+        74.9,
+        73.1,
+        71.3,
+        69.8,
+        67.9,
+        66.1,
+        64.3,
         62.4,
-        60.5,
-        58.6,
-        56.7,
-        54.7,
-        52.9,
-        50.9,
-        48.9,
-        47.2,
-        45.3,
-        43.7,
-        42.2,
-        40.8
+        60.6,
+        58.7,
+        57.2,
+        55.2,
+        53.4,
+        51.5,
+        49.4,
+        48.0,
+        46.3
       ]
     }
   },
   "chart": {
     "candles": [
-      {
-        "date": "2026-09-28",
-        "open": 740.4600219726562,
-        "high": 741.4199829101562,
-        "low": 731.6300048828125,
-        "close": 736.530029296875
-      },
       {
         "date": "2026-09-29",
         "open": 740.1500244140625,
@@ -602,23 +605,30 @@
         "high": 664.52001953125,
         "low": 653.989990234375,
         "close": 656.0999755859375
+      },
+      {
+        "date": "2026-11-09",
+        "open": 662.6400146484375,
+        "high": 682.47998046875,
+        "low": 662.02001953125,
+        "close": 679.3499755859375
       }
     ],
-    "anchor": 656.0999755859375,
-    "proj_date": "2026-11-09",
+    "anchor": 679.3499755859375,
+    "proj_date": "2026-11-10",
     "proj_up": {
-      "10": 657.3303726627698,
-      "25": 659.3072643464616,
-      "50": 662.6517275121258,
-      "75": 667.2914375113892,
-      "90": 672.0812514767747
+      "10": 680.396509614776,
+      "25": 682.5281771198808,
+      "50": 686.6610002131264,
+      "75": 691.346060340534,
+      "90": 696.8578649051137
     },
     "proj_dn": {
-      "10": 654.8861895826294,
-      "25": 653.5504639554601,
-      "50": 649.9440818885769,
-      "75": 644.944457572367,
-      "90": 638.4856010281301
+      "10": 678.45584692386,
+      "25": 676.3571827467773,
+      "50": 672.3364604437095,
+      "75": 665.6700320651977,
+      "90": 657.5280820283416
     }
   }
 }
